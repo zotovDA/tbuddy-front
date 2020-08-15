@@ -1,0 +1,33 @@
+@import './media';
+
+// bootstrap
+
+@import '../../node_modules/bootstrap/scss/bootstrap';
+
+// stick to bottom footer
+html {
+  height: 100%;
+}
+body {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+section {
+  padding: 70px 0;
+}
+@include media-breakpoint-down(md) {
+  section {
+    padding: 35px 0;
+  }
+}
+
+.footer {
+  padding-top: 25px;
+  grid-row-start: 2;
+  grid-row-end: 3;
+}
+
+a.disabled {
+  opacity: 0.65;
+}
