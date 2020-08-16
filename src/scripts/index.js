@@ -1,20 +1,14 @@
-import 'bootstrap/js/dist/button';
-import 'bootstrap/js/dist/collapse';
-import Tooltip from 'bootstrap/js/dist/tooltip';
-import 'bootstrap/js/dist/dropdown';
+import 'bootstrap';
 
 import '../stylesheets/style.scss';
+import { restoreSessionFromStore } from './auth';
+import initAllBinds from './binds';
 
 function onInit() {
-  initBootstrapFeatures();
-}
+  initAllBinds();
 
-function initBootstrapFeatures() {
-  // turn on BS Tooltip plugin
-  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="tooltip"]'));
-  tooltipTriggerList.map(function(tooltipTriggerEl) {
-    return new Tooltip(tooltipTriggerEl);
-  });
+  // check cached user
+  restoreSessionFromStore();
 }
 
 document.addEventListener('DOMContentLoaded', onInit);
