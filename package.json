@@ -1,19 +1,19 @@
 {
-  "name": "n-scanner",
+  "name": "travel-buddy",
   "version": "1.0.0",
   "description": "Service that helps you to find apartaments",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zotovDA/n-scanner.git"
+    "url": "git+https://github.com/zotovDA/tbuddy-front.git"
   },
   "keywords": [],
   "author": "ZotovDA",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/zotovDA/n-scanner/issues"
+    "url": "https://github.com/zotovDA/tbuddy-front/issues"
   },
-  "homepage": "https://github.com/zotovDA/n-scanner#readme",
+  "homepage": "https://github.com/zotovDA/tbuddy-front#readme",
   "scripts": {
     "prestart": "rimraf build && rimraf ./stats.json",
     "start": "webpack-dev-server --open --mode development",
@@ -23,7 +23,8 @@
     "check-stylelint-config": "stylelint-config-prettier-check",
     "lint-code": "eslint 'src/scripts/**/*.js'",
     "lint-style": "stylelint 'src/stylesheets/**/*.{css,scss}'",
-    "analyze": "webpack-bundle-analyzer ./stats.json"
+    "analyze": "webpack-bundle-analyzer ./stats.json",
+    "test": "jest"
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",
@@ -46,6 +47,8 @@
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
     "husky": "^3.0.5",
+    "jest": "^26.4.0",
+    "jest-cli": "^26.4.0",
     "lint-staged": "^9.4.0",
     "mini-css-extract-plugin": "^0.8.0",
     "node-sass": "^4.12.0",
