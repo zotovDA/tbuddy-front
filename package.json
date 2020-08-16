@@ -101,6 +101,8 @@
   "dependencies": {
     "bootstrap": "^5.0.0-alpha1",
     "bootstrap-icons": "^1.0.0-alpha5",
+    "handlebars": "^4.7.6",
+    "handlebars-loader": "^1.7.1",
     "popper.js": "^1.16.1"
   }
 }

@@ -48,6 +48,9 @@ module.exports = {
         test: /\.html$/,
         use: 'html-loader',
       },
+      { 
+        test: /\.(hbs|handlebars)$/,
+        use: "handlebars-loader" },
       {
         test: /\.(woff2?|eot|ttf|otf)$/,
         use: {
