@@ -8,7 +8,10 @@ const { StatsWriterPlugin } = require('webpack-stats-plugin');
 const production = {
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'index.html',
+      template: 'index.hbs',
+      templateParameters: {
+        title: 'Travel Buddy'
+      },
       minify: {
         removeComments: true,
         collapseWhitespace: true,
