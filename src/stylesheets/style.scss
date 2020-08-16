@@ -2,6 +2,7 @@
 
 // bootstrap
 
+@import './vars';
 @import '../../node_modules/bootstrap/scss/bootstrap';
 
 // stick to bottom footer
@@ -23,11 +24,21 @@ section {
 }
 
 .footer {
-  padding-top: 25px;
+  &-inner {
+    &__line {
+      position: absolute;
+      top: 0;
+      left: 0;
+
+      width: 100%;
+      height: 1px;
+    }
+
+    position: relative;
+    padding-top: 1.5rem;
+    padding-bottom: 0.5rem;
+  }
+
   grid-row-start: 2;
   grid-row-end: 3;
-}
-
-a.disabled {
-  opacity: 0.65;
 }
