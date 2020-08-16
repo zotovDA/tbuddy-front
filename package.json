@@ -23,7 +23,8 @@
     "check-stylelint-config": "stylelint-config-prettier-check",
     "lint-code": "eslint 'src/scripts/**/*.js'",
     "lint-style": "stylelint 'src/stylesheets/**/*.{css,scss}'",
-    "analyze": "webpack-bundle-analyzer ./stats.json"
+    "analyze": "webpack-bundle-analyzer ./stats.json",
+    "test": "jest"
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",
@@ -46,6 +47,8 @@
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
     "husky": "^3.0.5",
+    "jest": "^26.4.0",
+    "jest-cli": "^26.4.0",
     "lint-staged": "^9.4.0",
     "mini-css-extract-plugin": "^0.8.0",
     "node-sass": "^4.12.0",

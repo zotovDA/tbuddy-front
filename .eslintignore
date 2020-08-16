@@ -1,5 +1,7 @@
 **/*{.,-}min.js
+**/*.test.js
 **/build/*
 **/webpack/*
 **/node_modules/* 
 webpack.config.js
+wallaby.js
