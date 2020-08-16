@@ -1,19 +1,19 @@
 {
-  "name": "n-scanner",
+  "name": "travel-buddy",
   "version": "1.0.0",
   "description": "Service that helps you to find apartaments",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zotovDA/n-scanner.git"
+    "url": "git+https://github.com/zotovDA/tbuddy-front.git"
   },
   "keywords": [],
   "author": "ZotovDA",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/zotovDA/n-scanner/issues"
+    "url": "https://github.com/zotovDA/tbuddy-front/issues"
   },
-  "homepage": "https://github.com/zotovDA/n-scanner#readme",
+  "homepage": "https://github.com/zotovDA/tbuddy-front#readme",
   "scripts": {
     "prestart": "rimraf build && rimraf ./stats.json",
     "start": "webpack-dev-server --open --mode development",
