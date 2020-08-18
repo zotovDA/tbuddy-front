@@ -1,4 +1,4 @@
-import { restoreSessionFromStore } from "./auth";
+import { restoreSessionFromStore, saveUserSessionToStore } from "./auth";
 
 beforeEach(() => {
   global.localStorage.clear()
@@ -20,6 +20,22 @@ describe('restore user session', () => {
     })
   });
 })
+
+describe('save user session', () => {
+  it('should save tokens and name to local storage', () => {
+    const mockSessionInfo = {
+      name: "John",
+      access: "1fgm32j1ui",
+      refresh: "tugrkjh12"
+    }
+
+    saveUserSessionToStore(mockSessionInfo);
+
+    expect(global.localStorage.getItem("user")).toBe('{"name":"John"}')
+    expect(global.localStorage.getItem("access")).toBe("1fgm32j1ui")
+    expect(global.localStorage.getItem("refresh")).toBe("tugrkjh12")
+  });
+});
 
 
 // Mock LocalStorage

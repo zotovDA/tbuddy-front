@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+{{> templates/head title=title}}
+
+<body>
+  <main>
+    {{> templates/header/header}}
+
+    <div class="container">
+      <div class="col-md-8 col-lg-6 mx-auto mt-5">
+        <div class="card">
+          <div class="card-header">
+            Выполняется вход
+          </div>
+          <div id="js-auth-handler-message" class="card-body">
+            <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+            <span class="sr-only">Loading...</span>
+            <span class="ml-2">Получение данных о пользователе</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  {{> templates/footer}}
+
+  <script>
+    window.authHandler = true;
+  </script>
+</body>
+
+</html>

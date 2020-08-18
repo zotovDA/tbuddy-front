@@ -1,7 +1,7 @@
 import 'bootstrap';
 
 import '../stylesheets/style.scss';
-import { restoreSessionFromStore } from './auth';
+import { restoreSessionFromStore, handleOAuth } from './auth';
 import initAllBinds from './binds';
 
 function onInit() {
@@ -11,4 +11,8 @@ function onInit() {
   restoreSessionFromStore();
 }
 
-document.addEventListener('DOMContentLoaded', onInit);
+if (window.authHandler) {
+  handleOAuth();
+} else {
+  document.addEventListener('DOMContentLoaded', onInit);
+}

@@ -1,5 +1,6 @@
 import unauthorizedTemplate from '../templates/header/_unauthorized.hbs';
 import authorizedTemplate from '../templates/header/_authorized.hbs';
+import authErrorTemplate from '../templates/auth/authError.hbs';
 
 /**
  * Update profile control in nav menu
@@ -18,4 +19,10 @@ export function updateNavUser(user) {
       });
     }
   }
+}
+
+export function drawAuthHandlerError() {
+  const messageNode = document.getElementById('js-auth-handler-message');
+
+  messageNode.innerHTML = authErrorTemplate();
 }

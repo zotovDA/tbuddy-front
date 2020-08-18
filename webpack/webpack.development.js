@@ -12,6 +12,13 @@ const development = {
       }
     }),
     new HtmlWebpackPlugin({
+      filename: 'auth.html',
+      template: 'authHandler.hbs',
+      templateParameters: {
+        title: 'T-Buddy | Авторизация'
+      }
+    }),
+    new HtmlWebpackPlugin({
       filename: 'login.html',
       template: 'login.hbs',
       templateParameters: {
