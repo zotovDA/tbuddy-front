@@ -1,4 +1,5 @@
 import { updateNavUser, drawAuthHandlerError, showPageError } from './view';
+import { initLogout } from './binds';
 
 export function restoreUserSession() {
   return new Promise((resolve, reject) => {
@@ -20,6 +21,7 @@ export function restoreUserSession() {
       return user;
     })
     .then(updateNavUser)
+    .then(initLogout)
     .catch(message => {
       if (message) {
         showPageError([{ title: 'Ошибка авторизации', message: message }]);
@@ -68,6 +70,11 @@ export function handleOAuth() {
     .catch(drawAuthHandlerError);
 }
 
+export function handleLogout() {
+  clearUserSessionFromStore();
+  updateNavUser(null);
+}
+
 /**
  * to local storage
  * @param {{access: string, refresh: string, name: string}} sessionInfo
@@ -76,4 +83,10 @@ export function saveUserSessionToStore(sessionInfo) {
   localStorage.setItem('access', sessionInfo.access);
   localStorage.setItem('refresh', sessionInfo.refresh);
   localStorage.setItem('user', JSON.stringify({ name: sessionInfo.name }));
+}
+
+export function clearUserSessionFromStore() {
+  localStorage.removeItem('access');
+  localStorage.removeItem('refresh');
+  localStorage.removeItem('user');
 }

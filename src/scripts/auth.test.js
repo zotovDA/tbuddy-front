@@ -1,4 +1,4 @@
-import { restoreSessionFromStore, saveUserSessionToStore } from "./auth";
+import { restoreSessionFromStore, saveUserSessionToStore, clearUserSessionFromStore } from "./auth";
 
 beforeEach(() => {
   global.localStorage.clear()
@@ -38,6 +38,23 @@ describe('save user session', () => {
     expect(global.localStorage.getItem("user")).toBe('{"name":"John"}')
     expect(global.localStorage.getItem("access")).toBe("1fgm32j1ui")
     expect(global.localStorage.getItem("refresh")).toBe("tugrkjh12")
+  });
+});
+
+describe('clear user session', () => {
+  it('should remove data from localStorage: access, refresh and user', () => {
+    // mock cached user info
+    global.localStorage.setItem("user", JSON.stringify({
+      name: 'John'
+    }))
+    global.localStorage.setItem("access", "rtyuidq")
+    global.localStorage.setItem("refresh", "ueidn12j")
+
+    clearUserSessionFromStore();
+
+    expect(global.localStorage.getItem("user")).toBe(null)
+    expect(global.localStorage.getItem("access")).toBe(null)
+    expect(global.localStorage.getItem("refresh")).toBe(null)
   });
 });
 
