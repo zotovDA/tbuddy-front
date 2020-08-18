@@ -20,13 +20,13 @@ export function restoreUserSession() {
 
       return user;
     })
-    .then(updateNavUser)
-    .then(initLogout)
     .catch(message => {
       if (message) {
         showPageError([{ title: 'Ошибка авторизации', message: message }]);
       }
-    });
+    })
+    .then(updateNavUser)
+    .then(initLogout);
 }
 
 export function restoreSessionFromStore() {
