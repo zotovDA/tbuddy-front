@@ -1,14 +1,18 @@
 import 'bootstrap';
 
 import '../stylesheets/style.scss';
-import { restoreSessionFromStore } from './auth';
+import { restoreUserSession, handleOAuth } from './auth';
 import initAllBinds from './binds';
 
 function onInit() {
   initAllBinds();
 
   // check cached user
-  restoreSessionFromStore();
+  restoreUserSession();
 }
 
-document.addEventListener('DOMContentLoaded', onInit);
+if (window.authHandler) {
+  handleOAuth();
+} else {
+  document.addEventListener('DOMContentLoaded', onInit);
+}
