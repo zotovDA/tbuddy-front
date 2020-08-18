@@ -1,9 +1,36 @@
-import { updateNavUser, drawAuthHandlerError } from './view';
+import { updateNavUser, drawAuthHandlerError, showPageError } from './view';
+
+export function restoreUserSession() {
+  return new Promise((resolve, reject) => {
+    const sessionInfo = restoreSessionFromStore();
+    if (sessionInfo !== null) {
+      resolve(sessionInfo);
+    } else {
+      reject();
+    }
+  })
+    .then(({ user }) => {
+      // TODO: update access token
+      const tokenValid = true;
+
+      if (!tokenValid) {
+        throw 'Сессия пользователя истекла';
+      }
+
+      return user;
+    })
+    .then(updateNavUser)
+    .catch(message => {
+      if (message) {
+        showPageError([{ title: 'Ошибка авторизации', message: message }]);
+      }
+    });
+}
 
 export function restoreSessionFromStore() {
-  // TODO: restore update token and update access token
-
   // restore cached user info
+  const access = localStorage.getItem('access');
+  const refresh = localStorage.getItem('refresh');
   const userPlain = localStorage.getItem('user');
   let user = null;
   try {
@@ -12,10 +39,13 @@ export function restoreSessionFromStore() {
     // null
   }
 
-  // draw changes
-  updateNavUser(user);
-
-  return user;
+  return (
+    access && {
+      access: access,
+      refresh: refresh,
+      user: user,
+    }
+  );
 }
 
 export function handleOAuth() {

@@ -14,9 +14,13 @@ describe('restore user session', () => {
     global.localStorage.setItem("user", JSON.stringify({
       name: 'John'
     }))
+    global.localStorage.setItem("access", "rtyuidq")
+    global.localStorage.setItem("refresh", "ueidn12j")
 
     expect(restoreSessionFromStore()).toEqual({
-      name: 'John'
+      user: { name: 'John' },
+      access: "rtyuidq",
+      refresh: "ueidn12j"
     })
   });
 })
