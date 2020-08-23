@@ -10,13 +10,15 @@ export default function initAllBinds() {
 }
 
 export const initNavigateBack = () => {
-  [...document.querySelectorAll(navigateBack)].forEach(item =>
-    item.addEventListener('click', handleGoBack)
-  );
+  [...document.querySelectorAll(navigateBack)].forEach(item => {
+    item.removeEventListener('click', handleGoBack);
+    item.addEventListener('click', handleGoBack);
+  });
 };
 
 export const initLogout = () => {
-  [...document.querySelectorAll(logout)].forEach(item =>
-    item.addEventListener('click', handleLogout)
-  );
+  [...document.querySelectorAll(logout)].forEach(item => {
+    item.removeEventListener('click', handleLogout);
+    item.addEventListener('click', handleLogout);
+  });
 };

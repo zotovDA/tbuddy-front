@@ -5,10 +5,9 @@ import { restoreUserSession, handleOAuth } from './auth';
 import initAllBinds from './binds';
 
 function onInit() {
-  initAllBinds();
-
   // check cached user
   restoreUserSession();
+  initAllBinds();
 }
 
 if (window.authHandler) {
