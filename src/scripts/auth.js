@@ -29,10 +29,7 @@ export function restoreUserSession() {
     .then(initLogout);
 }
 
-export function restoreSessionFromStore() {
-  // restore cached user info
-  const access = localStorage.getItem('access');
-  const refresh = localStorage.getItem('refresh');
+function getUserFromStore() {
   const userPlain = localStorage.getItem('user');
   let user = null;
   try {
@@ -40,6 +37,14 @@ export function restoreSessionFromStore() {
   } catch (e) {
     // null
   }
+  return user;
+}
+
+export function restoreSessionFromStore() {
+  // restore cached user info
+  const access = localStorage.getItem('access');
+  const refresh = localStorage.getItem('refresh');
+  const user = getUserFromStore();
 
   return (
     access && {
@@ -77,12 +82,17 @@ export function handleLogout() {
 
 /**
  * to local storage
- * @param {{access: string, refresh: string, name: string}} sessionInfo
+ * @param {{access: string, refresh: string, id: number, name: string}} sessionInfo
  */
 export function saveUserSessionToStore(sessionInfo) {
   localStorage.setItem('access', sessionInfo.access);
   localStorage.setItem('refresh', sessionInfo.refresh);
-  localStorage.setItem('user', JSON.stringify({ name: sessionInfo.name }));
+  localStorage.setItem('user', JSON.stringify({ id: sessionInfo.id, name: sessionInfo.name }));
+}
+
+export function getCurrentUserId() {
+  const user = getUserFromStore();
+  return user ? user.id : null;
 }
 
 export function clearUserSessionFromStore() {
