@@ -3,13 +3,170 @@
 {{> templates/head title=title}}
 
 <body>
+  <style>
+    .welcome {
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background: url(http://unsplash.it/id/1001/1920/1080) center no-repeat;
+      background-size: cover;
+    }
+
+    .welcome-content {
+      display: flex;
+      height: 100%;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .welcome-content-group {
+      text-align: center;
+      color: #fff;
+      border: 5px solid #fff;
+      padding: .5em 3em;
+      background-color: rgba(0, 0, 0, .2);
+      z-index: 2;
+    }
+
+    .welcome-overlay {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 0;
+      background: url(http://unsplash.it/id/1001/1920/1080?blur) center no-repeat;
+      background-size: cover;
+      z-index: 0;
+      opacity: 0;
+    }
+  </style>
   <main>
     {{> templates/header/header}}
 
-    {{> templates/pass}}
+    <div class="welcome">
+      <div class="welcome-content">
+        <div class="welcome-content-group">
+          <h1>TRAVEL BUDDY</h1>
+          <h5>Сервис персональных помощников в путешествиях,
+            <br /> которые готовы помогать вам совершенно по любым вопросам.</h5>
+        </div>
+      </div>
+      <div class="welcome-overlay"></div>
+    </div>
+    <section>
+      <div class="container">
+        <div class="col-12 col-md-10 col-lg-8 mx-auto">
+          <p class="lead">Во время путешествия мы сталкиваемся с кучей проблем которые отнимают не только время но и
+            ресурсы.</p>
+          <p>
+            Сервис персональных помощников в путешествиях из города прибывания которые могут за деньги решить любые ваши
+            задачи.
+          </p>
+          <p>
+            Любой человек может стать помощником и начать зарабатывать на знании локации его пребывания. Поручите все
+            задачи помощнику, проживающему в месте пребывания.
+          </p>
+          <h3>Как это работает?</h3>
+          <p>
+            Вводите даты и место поездки, выбираете понравившегося помошника, платите ему фиксированную стоимость,
+            получаете отличный отдхы без проблем и хлопот.</p>
+          <h3>Если я путешественник?</h3>
+          <p>Необходимо пройти простую регистрацию и выбрать себе помощника. Помощники всегда находятся в городе вашего
+            пребывания. Все помощники говорят на вашем языке и языке страны, куда вы приехали.</p>
+          <h3>Могу стать помощником?</h3>
+          <p>Конечно да! Если ты считаешь что твой город популярен для туристов и тебе есть что показать и рассказать то
+            смелее регистрируйся в нашем сервисе.</p>
+        </div>
+      </div>
+    </section>
   </main>
 
   {{> templates/footer}}
+  <script>
+    /**
+    * Parallax scroll effect
+    * Created by Sallar Kaboli <sallar.kaboli@gmail.com>
+    */
+    var $content = document.querySelector('.welcome .welcome-content')
+      , $blur = document.querySelector('.welcome .welcome-overlay')
+      , wHeight = window.innerHeight;
+
+    window.addEventListener('resize', function () {
+      wHeight = window.innerHeight;
+    });
+
+    /**
+     * requestAnimationFrame Shim 
+     */
+    window.requestAnimFrame = (function () {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        function (callback) {
+          window.setTimeout(callback, 1000 / 60);
+        };
+    })();
+
+    /**
+     * Scroller
+     */
+    function Scroller() {
+      this.latestKnownScrollY = 0;
+      this.ticking = false;
+    }
+
+    Scroller.prototype = {
+      /**
+       * Initialize
+       */
+      init: function () {
+        window.addEventListener('scroll', this.onScroll.bind(this), false);
+      },
+
+      /**
+       * Capture Scroll
+       */
+      onScroll: function () {
+        this.latestKnownScrollY = window.scrollY;
+        this.requestTick();
+      },
+
+      /**
+       * Request a Tick
+       */
+      requestTick: function () {
+        if (!this.ticking) {
+          window.requestAnimFrame(this.update.bind(this));
+        }
+        this.ticking = true;
+      },
+
+      /**
+       * Update.
+       */
+      update: function () {
+        var currentScrollY = this.latestKnownScrollY;
+        this.ticking = false;
+
+        /**
+         * Do The Dirty Work Here
+         */
+        var slowScroll = currentScrollY / 4,
+          blurScroll = currentScrollY * 2;
+
+        $content.style.transform = 'translateY(-' + slowScroll + 'px)';
+
+        $blur.style.opacity = blurScroll / wHeight;
+      }
+    };
+
+    /**
+     * Attach!
+     */
+    var scroller = new Scroller();
+    scroller.init();
+  </script>
 </body>
 
 </html>
