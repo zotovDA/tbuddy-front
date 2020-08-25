@@ -6,7 +6,15 @@
   <main>
     {{> templates/header/header}}
 
-    {{> templates/pass}}
+    <section>
+      <div class="container" id="js-page-error"></div>
+      <div id="js-user-profile" class="container">
+        <div class="text-center">
+          <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
+          <span class="text-muted">загрузка данных&hellip;</span>
+        </div>
+      </div>
+    </section>
   </main>
 
   {{> templates/footer}}

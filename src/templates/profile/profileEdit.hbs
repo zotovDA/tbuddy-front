@@ -1,0 +1,23 @@
+<div class="col-12 col-md-10 col-lg-8 mx-auto">
+  <form class="js-profile-edit-form">
+    <div class="mb-3">
+      <label for="profile-name" class="form-label">Имя</label>
+      <input name="name" value="{{ name }}" class="form-control" id="profile-name">
+    </div>
+    <div class="mb-3">
+      <label for="profile-birthdate" class="form-label">Дата рождения</label>
+      <input type="date" name="birthdate" value="{{ birthdate }}" class="form-control" id="profile-birthdate">
+    </div>
+    <div class="mb-3">
+      <label for="profile-country" class="form-label">Страна происхождения</label>
+      <input name="country" value="{{ country }}" class="form-control" id="profile-country">
+    </div>
+    <div class="mb-3">
+      <label for="profile-bio" class="form-label">О себе</label>
+      <textarea name="bio" class="form-control" id="profile-bio" rows="3">{{ bio }}</textarea>
+    </div>
+
+    <span id="js-profile-edit-form-submit"><button type="submit" class="btn btn-primary">Сохранить</button></span>
+    <button type="button" class="js-profile-edit-cancel btn btn-secondary">Отмена</button>
+  </form>
+</div>

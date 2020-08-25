@@ -1,22 +1,43 @@
 import { handleGoBack } from './helpers';
 import { handleLogout } from './auth';
+import { initEditProfile, initUserProfileFromCache, onEditUserSubmit } from './profile';
 
 const navigateBack = '.js-go-back';
 const logout = '.js-logout';
 
 export default function initAllBinds() {
-  initNavigateBack();
-  initLogout();
+  initNavigateBackBinds();
+  initLogoutBinds();
 }
 
-export const initNavigateBack = () => {
-  [...document.querySelectorAll(navigateBack)].forEach(item =>
-    item.addEventListener('click', handleGoBack)
-  );
+export const initProfileBinds = () => {
+  [...document.querySelectorAll('.js-profile-edit')].forEach(item => {
+    item.removeEventListener('click', initEditProfile);
+    item.addEventListener('click', initEditProfile);
+  });
 };
 
-export const initLogout = () => {
-  [...document.querySelectorAll(logout)].forEach(item =>
-    item.addEventListener('click', handleLogout)
-  );
+export const initProfileEditBinds = () => {
+  [...document.querySelectorAll('.js-profile-edit-form')].forEach(item => {
+    item.removeEventListener('submit', onEditUserSubmit);
+    item.addEventListener('submit', onEditUserSubmit);
+  });
+  [...document.querySelectorAll('.js-profile-edit-cancel')].forEach(item => {
+    item.removeEventListener('click', initUserProfileFromCache);
+    item.addEventListener('click', initUserProfileFromCache);
+  });
+};
+
+export const initNavigateBackBinds = () => {
+  [...document.querySelectorAll(navigateBack)].forEach(item => {
+    item.removeEventListener('click', handleGoBack);
+    item.addEventListener('click', handleGoBack);
+  });
+};
+
+export const initLogoutBinds = () => {
+  [...document.querySelectorAll(logout)].forEach(item => {
+    item.removeEventListener('click', handleLogout);
+    item.addEventListener('click', handleLogout);
+  });
 };
