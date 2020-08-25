@@ -1,0 +1,19 @@
+<div class="row">
+  <div class="col-12 col-md-4 col-lg-3">
+    <img style="min-height: 200px; max-height: 300px;" class="img-cover rounded profile-image" src='{{ photo }}' alt='profile photo' />
+  </div>
+  <div class="col-12 col-md-8 col-lg-6">
+    <h1>{{ name }} <small class="text-muted">{{ age }}</small></h1>
+    <h4>From {{ country }}</h4>
+    <div class="profile-skills">
+      {{#each skills }}
+      <span class="badge bg-primary">{{ this }}</span>
+      {{/each}}
+    </div>
+    <p class="profile-about">{{ bio }}</p>
+
+    <div class="profile-controls">
+      <button class="js-profile-edit btn btn-primary">Редактировать</button>
+    </div>
+  </div>
+</div>

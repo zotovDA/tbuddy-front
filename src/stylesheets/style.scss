@@ -23,6 +23,12 @@ section {
   }
 }
 
+.img-cover {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
 .footer {
   &-inner {
     &__line {
