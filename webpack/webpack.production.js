@@ -28,7 +28,7 @@ const production = {
       filename: 'auth.html',
       template: 'authHandler.hbs',
       templateParameters: {
-        title: 'T-Buddy | Авторизация'
+        title: 'T-Buddy | Authentification'
       },
       minify: minifyOptions,
     }),
@@ -36,7 +36,7 @@ const production = {
       filename: 'login.html',
       template: 'login.hbs',
       templateParameters: {
-        title: 'T-Buddy | Авторизация'
+        title: 'T-Buddy | Authentification'
       },
       minify: minifyOptions,
     }),
@@ -44,7 +44,7 @@ const production = {
       filename: 'about.html',
       template: 'about.hbs',
       templateParameters: {
-        title: 'T-Buddy | Как это работает'
+        title: 'T-Buddy | How it works'
       },
       minify: minifyOptions,
     }),
@@ -52,7 +52,7 @@ const production = {
       filename: 'profile.html',
       template: 'profile.hbs',
       templateParameters: {
-        title: 'T-Buddy | Личный кабинет'
+        title: 'T-Buddy | Profile'
       },
       minify: minifyOptions,
     }),
@@ -60,7 +60,7 @@ const production = {
       filename: 'profile/requests.html',
       template: 'requests.hbs',
       templateParameters: {
-        title: 'T-Buddy | Заявки'
+        title: 'T-Buddy | Requests'
       },
       minify: minifyOptions,
     }),
