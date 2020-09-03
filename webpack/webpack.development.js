@@ -15,35 +15,35 @@ const development = {
       filename: 'auth.html',
       template: 'authHandler.hbs',
       templateParameters: {
-        title: 'T-Buddy | Авторизация'
+        title: 'T-Buddy | Authentification'
       }
     }),
     new HtmlWebpackPlugin({
       filename: 'login.html',
       template: 'login.hbs',
       templateParameters: {
-        title: 'T-Buddy | Авторизация'
+        title: 'T-Buddy | Authentification'
       }
     }),
     new HtmlWebpackPlugin({
       filename: 'about.html',
       template: 'about.hbs',
       templateParameters: {
-        title: 'T-Buddy | Как это работает'
+        title: 'T-Buddy | How it works'
       }
     }),
     new HtmlWebpackPlugin({
       filename: 'profile.html',
       template: 'profile.hbs',
       templateParameters: {
-        title: 'T-Buddy | Личный кабинет'
+        title: 'T-Buddy | Profile'
       }
     }),
     new HtmlWebpackPlugin({
       filename: 'profile/requests.html',
       template: 'requests.hbs',
       templateParameters: {
-        title: 'T-Buddy | Заявки'
+        title: 'T-Buddy | Requests'
       }
     }),
   ],
