@@ -3,76 +3,142 @@
 {{> templates/head title=title}}
 
 <body>
-  <style>
-    .welcome {
-      height: 100vh;
-      position: relative;
-      overflow: hidden;
-      background: url(http://unsplash.it/id/1001/1920/1080) center no-repeat;
-      background-size: cover;
-    }
-
-    .welcome-content {
-      display: flex;
-      height: 100%;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .welcome-content-group {
-      text-align: center;
-      color: #fff;
-      border: 5px solid #fff;
-      padding: .5em 3em;
-      background-color: rgba(0, 0, 0, .2);
-      z-index: 2;
-    }
-
-    .welcome-overlay {
-      position: absolute;
-      top: 0;
-      right: 0;
-      left: 0;
-      bottom: 0;
-      background: url(http://unsplash.it/id/1001/1920/1080?blur) center no-repeat;
-      background-size: cover;
-      z-index: 0;
-      opacity: 0;
-    }
-  </style>
   <main>
     {{> templates/header/header}}
 
     <div class="welcome">
       <div class="welcome-content">
-        <div class="welcome-content-group">
+        <div class="welcome-content-group py-4">
           <h1>TRAVEL BUDDY</h1>
           <h5>A service of personal travel assistants from the city of arrival,
             <br /> who can solve any of your problems for a fee.</h5>
+          <button data-target="landing-start" class="btn btn-primary mt-4 js-scroll-to">Learn more</button>
         </div>
       </div>
       <div class="welcome-overlay"></div>
     </div>
+    <section id="landing-start">
+      <div class="container">
+        <div class="text-center mb-5">
+          <h2 class="mb-4">We feel your pain</h2>
+          <h4 class="text-muted">While traveling, we are faced with a bunch of problems
+            <br> that take up not only time but also resources.</h4>
+          <div class="row">
+            <div class="col-lg-7 mx-auto mt-5">
+              <img src="/src/images/landing/problem.svg" alt="" class="img-fluid">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="bg-primary text-white">
+      <div class="container">
+        <div class="text-center mb-5">
+          <h2 class="mb-4">Assign all tasks to an assistant
+            <br> who lives at the place of stay</h2>
+          <h4 class="text-light">Anyone can become an assistant and start making money
+            <br> on the knowledge of the location of his stay.</h4>
+        </div>
+      </div>
+    </section>
     <section>
       <div class="container">
-        <div class="col-12 col-md-10 col-lg-8 mx-auto">
-          <p class="lead">While traveling, we are faced with a bunch of problems that take up not only time but also
-            resources.</p>
-          <p>
-            Anyone can become an assistant and start making money on the knowledge of the location of his stay. Assign
-            all tasks to an assistant who lives at the place of stay.
-          </p>
-          <h3>How it works?</h3>
-          <p>
-            Enter the dates and place of the trip, choose the assistant you like, pay him a price, you talked about get
-            an excellent rest without problems and hassle.</p>
-          <h3>What if I am traveller?</h3>
-          <p>You need to go through a simple registration and choose your assistant. Assistants are always in the city
-            of your stay. All assistants speak your language and the language of the country where you arrived.</p>
-          <h3>Can I become buddy?</h3>
-          <p>Of course yes! If you think that your city is popular for tourists and you have something to show and tell,
-            then feel free to register in our service.</p>
+        <div class="text-center mb-5">
+          <h2>Get started with service</h2>
+          <h4 class="font-italic text-muted">3 easy steps, just give it a try!</h4>
+        </div>
+
+        <ul class="timeline">
+          <li>
+            <div class="timeline-image"><img class="rounded-circle img-fluid"
+                src="https://cdn.pixabay.com/photo/2015/07/28/22/04/female-865110_1280.jpg" alt=""></div>
+            <div class="timeline-panel">
+              <div class="timeline-heading">
+                <h4>Leave your request</h4>
+              </div>
+              <div class="timeline-body">
+                <p class="text-muted">Specify the location and date, describe the task and write how much you are
+                  willing to pay.
+                  <br> Don't forget to be polite with others.</p>
+              </div>
+            </div>
+          </li>
+          <li class="timeline-inverted">
+            <div class="timeline-image"><img class="rounded-circle img-fluid"
+                src="https://cdn.pixabay.com/photo/2016/11/08/05/10/students-1807505_1280.jpg" alt=""></div>
+            <div class="timeline-panel">
+              <div class="timeline-heading">
+                <h4>Choose your buddy</h4>
+              </div>
+              <div class="timeline-body">
+                <p class="text-muted">Choose an assistant that you like, or receive an incoming requests from buddies
+                  that wants to help you with your request.</p>
+              </div>
+            </div>
+          </li>
+          <li>
+            <div class="timeline-image"><img class="rounded-circle img-fluid"
+                src="https://cdn.pixabay.com/photo/2015/08/05/01/12/phone-875488_1280.jpg" alt=""></div>
+            <div class="timeline-panel">
+              <div class="timeline-heading">
+                <h4>Talk with buddy</h4>
+              </div>
+              <div class="timeline-body">
+                <p class="text-muted">Discuss all request details, clarify request cost with your buddy and decide would
+                  you agree or not.
+                  Make sure you both understand conditions and final price.</p>
+              </div>
+            </div>
+          </li>
+          <li class="timeline-inverted">
+            <div class="timeline-image bg-primary">
+              <h4>
+                Enjoy!
+              </h4>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+    <section class="showcase py-0">
+      <div class="container-fluid p-0">
+        <div class="row no-gutters">
+
+          <div class="col-lg-6 order-lg-2 text-white showcase-img"
+            style="background-image: url('https://cdn.pixabay.com/photo/2016/11/16/03/37/globe-trotter-1828079_1280.jpg');"></div>
+          <div class="col-lg-6 order-lg-1 my-auto showcase-text">
+            <h2>What if I am traveller?</h2>
+            <p class="lead mb-0">You need to go through a simple registration and choose your assistant. Assistants are
+              always in the city of your stay. All assistants speak your language and the language of the country where
+              you arrived.</p>
+          </div>
+        </div>
+        <div class="row no-gutters">
+          <div class="col-lg-6 text-white showcase-img" style="background-position-y: center; background-image: url('https://images.unsplash.com/photo-1542380536-3eb944a532d8?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=934&q=80');"></div>
+          <div class="col-lg-6 my-auto showcase-text">
+            <h2>Can I become buddy?</h2>
+            <p class="lead mb-0">Of course yes! If you think that your city is popular for tourists and you have
+              something to show and tell, then feel free to register in our service.</p>
+          </div>
+        </div>
+      </div>
+      </div>
+    </section>
+    <section id="landing-subscribe" class="bg-light">
+      <div class="container">
+        <div class="text-center mb-5">
+          <h2>Get started today</h2>
+          <h4 class="text-muted">Subsctibe to receive notification on launch!</h4>
+        </div>
+        <div class="row">
+          <div class="col-lg-6 mx-auto js-subsctiption-wrapper">
+            <form method="POST" action="#" class="js-subscription-form subscription-form mt-5">
+              <div class="form-group">
+                <input type="email" name="email" placeholder="name@company.com" class="form-control">
+                <button type="submit" class="btn btn-primary">Get Started</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </section>
