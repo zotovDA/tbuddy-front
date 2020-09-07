@@ -2,6 +2,7 @@ import { handleGoBack } from './helpers';
 import { handleLogout } from './auth';
 import { initEditProfile, initUserProfileFromCache, onEditUserSubmit } from './profile';
 import animateScrollTo from 'animated-scroll-to';
+import { handleSubscribeSubmit } from './pages/landing';
 
 const navigateBack = '.js-go-back';
 const logout = '.js-logout';
@@ -52,5 +53,11 @@ export const initNavigateBackBinds = () => {
 export const initLogoutBinds = () => {
   [...document.querySelectorAll(logout)].forEach(item => {
     updateBinds(item, 'click', handleLogout);
+  });
+};
+
+export const initSubscribeBinds = () => {
+  [...document.querySelectorAll('.js-subscription-form')].forEach(item => {
+    updateBinds(item, 'submit', handleSubscribeSubmit);
   });
 };

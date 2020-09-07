@@ -20,6 +20,13 @@ if (!$userAddress) {
 } else {
   writeInFile($userAddress);
 }
+
+$fromAjax = $_POST['ajax'];
+if ($fromAjax) {
+  header("Content-type: application/json");
+  echo json_encode(array("result" => $result));
+  return;
+}
 ?>
 
 <!DOCTYPE html>
@@ -57,5 +64,3 @@ if (!$userAddress) {
 </body>
 
 </html>
-
-<?php return $result; ?>
