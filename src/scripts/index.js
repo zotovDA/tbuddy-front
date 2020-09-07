@@ -5,6 +5,9 @@ import { restoreUserSession, handleOAuth } from './auth';
 import initAllBinds from './binds';
 import { initUserProfile } from './profile';
 
+// PAGES
+import './pages/landing';
+
 function onInit() {
   // check cached user
   restoreUserSession();

@@ -19,6 +19,7 @@
     "start": "webpack-dev-server --open --mode development",
     "prebuild": "rimraf build && rimraf ./stats.json",
     "build": "webpack --mode production --progress --display-error-details",
+    "build:dev": "webpack --mode development --progress --display-error-details",
     "check-eslint-config": "eslint --print-config .eslintrc | eslint-config-prettier-check",
     "check-stylelint-config": "stylelint-config-prettier-check",
     "lint-code": "eslint 'src/scripts/**/*.js'",
