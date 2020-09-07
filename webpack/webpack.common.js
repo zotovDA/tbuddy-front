@@ -48,9 +48,6 @@ module.exports = {
         test: /\.html$/,
         use: 'html-loader',
       },
-      { 
-        test: /\.(hbs|handlebars)$/,
-        use: "handlebars-loader" },
       {
         test: /\.(woff2?|eot|ttf|otf)$/,
         use: {
@@ -67,11 +64,19 @@ module.exports = {
         use: {
           loader: 'file-loader',
           options: {
-            publicPath: '../images',
+            esModule: false,
+            publicPath: './images',
             outputPath: 'images',
             name: '[name].[hash:8].[ext]',
           },
         },
+      },
+      {
+        test: /\.(hbs|handlebars)$/,
+        use: [{
+          loader: "handlebars-loader",
+          options: { inlineRequires: "/images/" }
+        }],
       },
     ],
   },
@@ -79,6 +84,8 @@ module.exports = {
     new MiniCssExtractPlugin({
       filename: 'stylesheets/[name].[hash:8].css',
     }),
-    new CopyWebpackPlugin([{ from: paths.static }]),
+    new CopyWebpackPlugin([
+      { from: paths.static },
+    ]),
   ],
 };
