@@ -2,7 +2,7 @@ import { handleGoBack } from './helpers';
 import { handleLogout } from './auth';
 import { initEditProfile, initUserProfileFromCache, onEditUserSubmit } from './profile';
 import animateScrollTo from 'animated-scroll-to';
-import { handleSubscribeSubmit } from './pages/landing';
+import { handleSubscribeSubmit } from './landing';
 
 const navigateBack = '.js-go-back';
 const logout = '.js-logout';

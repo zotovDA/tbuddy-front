@@ -1,4 +1,4 @@
-import { updateNavUser, drawAuthHandlerError, showPageError } from './view';
+import { updateNavUser, showPageError } from './view';
 import { initLogoutBinds } from './binds';
 
 export function restoreUserSession() {
@@ -53,27 +53,6 @@ export function restoreSessionFromStore() {
       user: user,
     }
   );
-}
-
-export function handleOAuth() {
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
-
-  const tokenAccess = urlParams.get('access');
-  const tokenRefresh = urlParams.get('refresh');
-  const name = urlParams.get('name');
-  const id = urlParams.get('id');
-
-  return new Promise((resolve, reject) => {
-    if ([tokenAccess, tokenRefresh].some(item => item === null)) {
-      reject();
-    }
-    saveUserSessionToStore({ access: tokenAccess, refresh: tokenRefresh, id: id, name: name });
-    resolve(name);
-  })
-    .then(name => updateNavUser({ name: name }))
-    .then(() => window.location.replace('/'))
-    .catch(drawAuthHandlerError);
 }
 
 export function handleLogout() {

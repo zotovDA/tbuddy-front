@@ -1,12 +1,13 @@
 import 'bootstrap';
 
 import '../stylesheets/style.scss';
-import { restoreUserSession, handleOAuth } from './auth';
+import { restoreUserSession } from './auth';
+import { handleOAuth } from './auth/index';
 import initAllBinds from './binds';
 import { initUserProfile } from './profile';
 
 // PAGES
-import './pages/landing';
+import './landing';
 
 function onInit() {
   // check cached user
