@@ -49,5 +49,6 @@ export function updateNavUser(user) {
 // ------ COMMON
 export function drawPageError(message) {
   const pageErrorNode = document.getElementById('js-page-error');
+  if (!pageErrorNode) throw 'No page error node provided';
   pageErrorNode.innerHTML = alertTemplate({ type: 'danger', message: message });
 }

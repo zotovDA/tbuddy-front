@@ -2,6 +2,10 @@ import authErrorTemplate from '../../templates/auth/authError.hbs';
 import { saveUserSessionToStore } from '../auth';
 import { updateNavUser } from '../view';
 
+import '../../stylesheets/style.scss';
+
+document.addEventListener('DOMContentLoaded', handleOAuth);
+
 export function handleOAuth() {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);

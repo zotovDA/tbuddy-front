@@ -1,7 +1,6 @@
 import { getCurrentUserId } from '../auth';
 import { drawPageError } from '../view';
 import { fetchUser } from '../../__mocks__/profile';
-import { initProfileEditBinds, initProfileBinds } from '../binds';
 import { formDataToObj, delay } from '../helpers';
 
 import profileTemplate from '../../templates/profile/userProfile.hbs';
@@ -9,6 +8,11 @@ import profileEditTemplate from '../../templates/profile/profileEdit.hbs';
 import saveLoadingButtonTemplate from '../../templates/buttons/processing.hbs';
 
 import moment from 'moment';
+
+import '../common';
+import { updateBinds } from '../binds';
+
+document.addEventListener('DOMContentLoaded', initUserProfile);
 
 let currentUser = {};
 
@@ -68,3 +72,18 @@ function drawUserEditProfileLoader() {
   const profileNode = document.getElementById('js-profile-edit-form-submit');
   profileNode.innerHTML = saveLoadingButtonTemplate({ text: 'Saving' });
 }
+
+const initProfileBinds = () => {
+  [...document.querySelectorAll('.js-profile-edit')].forEach(item => {
+    updateBinds(item, 'click', initEditProfile);
+  });
+};
+
+const initProfileEditBinds = () => {
+  [...document.querySelectorAll('.js-profile-edit-form')].forEach(item => {
+    updateBinds(item, 'submit', onEditUserSubmit);
+  });
+  [...document.querySelectorAll('.js-profile-edit-cancel')].forEach(item => {
+    updateBinds(item, 'click', initUserProfileFromCache);
+  });
+};
