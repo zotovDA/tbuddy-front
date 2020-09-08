@@ -44,15 +44,6 @@ const production = {
       minify: minifyOptions,
     }),
     new HtmlWebpackPlugin({
-      chunks: ['common'],
-      filename: 'about.html',
-      template: 'about.hbs',
-      templateParameters: {
-        title: 'T-Buddy | How it works'
-      },
-      minify: minifyOptions,
-    }),
-    new HtmlWebpackPlugin({
       chunks: ['profile'],
       filename: 'profile.html',
       template: 'profile.hbs',
