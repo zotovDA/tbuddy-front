@@ -29,14 +29,6 @@ const development = {
       }
     }),
     new HtmlWebpackPlugin({
-      filename: 'about.html',
-      chunks: ['common'],
-      template: 'about.hbs',
-      templateParameters: {
-        title: 'T-Buddy | How it works'
-      }
-    }),
-    new HtmlWebpackPlugin({
       filename: 'profile.html',
       chunks: ['profile'],
       template: 'profile.hbs',
