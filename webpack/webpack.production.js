@@ -18,6 +18,7 @@ const minifyOptions = {
 const production = {
   plugins: [
     new HtmlWebpackPlugin({
+      chunks: ['landing'],
       template: 'index.hbs',
       templateParameters: {
         title: 'Travel Buddy'
@@ -25,6 +26,7 @@ const production = {
       minify: minifyOptions,
     }),
     new HtmlWebpackPlugin({
+      chunks: ['auth'],
       filename: 'auth.html',
       template: 'authHandler.hbs',
       templateParameters: {
@@ -33,6 +35,7 @@ const production = {
       minify: minifyOptions,
     }),
     new HtmlWebpackPlugin({
+      chunks: ['common'],
       filename: 'login.html',
       template: 'login.hbs',
       templateParameters: {
@@ -41,6 +44,7 @@ const production = {
       minify: minifyOptions,
     }),
     new HtmlWebpackPlugin({
+      chunks: ['common'],
       filename: 'about.html',
       template: 'about.hbs',
       templateParameters: {
@@ -49,6 +53,7 @@ const production = {
       minify: minifyOptions,
     }),
     new HtmlWebpackPlugin({
+      chunks: ['profile'],
       filename: 'profile.html',
       template: 'profile.hbs',
       templateParameters: {
@@ -57,6 +62,7 @@ const production = {
       minify: minifyOptions,
     }),
     new HtmlWebpackPlugin({
+      chunks: ['profile'],
       filename: 'profile/requests.html',
       template: 'requests.hbs',
       templateParameters: {

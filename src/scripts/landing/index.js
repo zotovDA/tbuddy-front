@@ -1,8 +1,9 @@
-import { initSubscribeBinds } from '../binds';
 import processingBtn from '../../templates/buttons/processing.hbs';
 
-import subscribeSuccess from '../../templates/alerts/subscribeSuccess.hbs';
-import subscribeError from '../../templates/alerts/subscribeError.hbs';
+import subscribeSuccess from '../../templates/landing/subscribeSuccess.hbs';
+import subscribeError from '../../templates/landing/subscribeError.hbs';
+
+import '../common';
 
 function onInit() {
   initSubscribeBinds();
@@ -62,5 +63,11 @@ function restoreSubscribeForm() {
   );
   initSubscribeBinds();
 }
+
+const initSubscribeBinds = () => {
+  [...document.querySelectorAll('.js-subscription-form')].forEach(item => {
+    item.addEventListener('submit', handleSubscribeSubmit);
+  });
+};
 
 document.addEventListener('DOMContentLoaded', onInit);

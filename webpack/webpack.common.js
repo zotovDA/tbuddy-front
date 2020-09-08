@@ -5,7 +5,10 @@ const paths = require('./paths');
 module.exports = {
   context: paths.src,
   entry: {
-    app: `./scripts/index.js`,
+    landing: './scripts/landing/index.js',
+    auth: './scripts/authorization/index.js',
+    profile: './scripts/profile/index.js',
+    common: './scripts/common.js'
   },
   output: {
     filename: `scripts/[name].[hash:8].js`,
