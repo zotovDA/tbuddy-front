@@ -1,32 +1,40 @@
 import { updateNavUser, showPageError } from './view';
 import { initLogoutBinds } from './binds';
+import Axios from 'axios';
 
 export function restoreUserSession() {
-  return new Promise((resolve, reject) => {
-    const sessionInfo = restoreSessionFromStore();
-    if (sessionInfo !== null) {
-      resolve(sessionInfo);
-    } else {
-      reject();
+  const sessionInfo = restoreSessionFromStore();
+  if (!sessionInfo) {
+    updateNavUser();
+    return;
+  }
+
+  refreshAccessToken(sessionInfo.refresh).then(hasAccess => {
+    updateNavUser();
+    if (!hasAccess) {
+      showPageError([{ title: 'Authorization error', message: 'User session expired.' }]);
+      return;
     }
-  })
-    .then(({ user }) => {
-      // TODO: update access token
-      const tokenValid = true;
 
-      if (!tokenValid) {
-        throw 'Сессия пользователя истекла';
-      }
+    setInterval(() => refreshAccessToken(sessionInfo), 4.59 * (60 ^ 2) * 1000);
+    initLogoutBinds();
+  });
+}
 
-      return user;
-    })
-    .catch(message => {
-      if (message) {
-        showPageError([{ title: 'Ошибка авторизации', message: message }]);
-      }
-    })
-    .then(updateNavUser)
-    .then(initLogoutBinds);
+async function refreshAccessToken(refreshToken) {
+  try {
+    const token = await Axios.post('/auth/token/refresh/', {
+      refresh: refreshToken,
+    });
+
+    updateAccessTokenToStore(token);
+    Axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+    return true;
+  } catch (e) {
+    handleLogout();
+    return false;
+  }
 }
 
 function getUserFromStore() {
@@ -58,6 +66,12 @@ export function restoreSessionFromStore() {
 export function handleLogout() {
   clearUserSessionFromStore();
   updateNavUser(null);
+  delete Axios.defaults.headers.common['Authorization'];
+  // TODO: add redirects
+}
+
+function updateAccessTokenToStore(token) {
+  localStorage.setItem('access', token);
 }
 
 /**
@@ -73,10 +87,6 @@ export function saveUserSessionToStore(sessionInfo) {
 export function getCurrentUserId() {
   const user = getUserFromStore();
   return user ? user.id : null;
-}
-
-export function getAccessToken() {
-  return localStorage.getItem('access');
 }
 
 export function clearUserSessionFromStore() {
