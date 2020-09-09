@@ -1,8 +1,11 @@
 import authErrorTemplate from '../../templates/auth/authError.hbs';
 import { saveUserSessionToStore } from '../auth';
-import { updateNavUser } from '../view';
 
 import '../../stylesheets/style.scss';
+import Axios from 'axios';
+
+// eslint-disable-next-line no-undef
+Axios.defaults.baseURL = process.env.API_BASE;
 
 document.addEventListener('DOMContentLoaded', handleOAuth);
 
@@ -10,20 +13,19 @@ export function handleOAuth() {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
 
-  const tokenAccess = urlParams.get('access');
-  const tokenRefresh = urlParams.get('refresh');
-  const name = urlParams.get('name');
-  const id = urlParams.get('id');
+  const code = urlParams.get('code');
+  const provider = urlParams.get('state');
 
-  return new Promise((resolve, reject) => {
-    if ([tokenAccess, tokenRefresh].some(item => item === null)) {
-      reject();
-    }
-    saveUserSessionToStore({ access: tokenAccess, refresh: tokenRefresh, id: id, name: name });
-    resolve(name);
+  if (!code || !provider) drawAuthHandlerError();
+
+  Axios.post('/auth/token/obtain/social/', {
+    provider: provider,
+    code: code,
   })
-    .then(name => updateNavUser({ name: name }))
-    .then(() => window.location.replace('/'))
+    .then(response => {
+      saveUserSessionToStore({ ...response, name: response.email });
+      window.location.replace('/');
+    })
     .catch(drawAuthHandlerError);
 }
 
