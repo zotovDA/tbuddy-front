@@ -1,7 +1,6 @@
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const paths = require('./paths');
-const Dotenv = require('dotenv-webpack');
 
 module.exports = {
   context: paths.src,
@@ -91,6 +90,5 @@ module.exports = {
     new CopyWebpackPlugin([
       { from: paths.static },
     ]),
-    new Dotenv()
   ],
 };
