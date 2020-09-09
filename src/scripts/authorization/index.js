@@ -4,8 +4,7 @@ import { saveUserSessionToStore } from '../auth';
 import '../../stylesheets/style.scss';
 import Axios from 'axios';
 
-// eslint-disable-next-line no-undef
-Axios.defaults.baseURL = process.env.API_BASE;
+Axios.defaults.baseURL = 'https://molodykh.pro/';
 
 document.addEventListener('DOMContentLoaded', handleOAuth);
 

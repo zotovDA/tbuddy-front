@@ -5,11 +5,8 @@ import { restoreUserSession } from './auth';
 import initAllBinds from './binds';
 import Axios from 'axios';
 
-// eslint-disable-next-line no-undef
-Axios.defaults.baseURL = process.env.API_BASE;
-
+Axios.defaults.baseURL = 'https://molodykh.pro/';
 function onInit() {
-  // check cached user
   restoreUserSession();
   initAllBinds();
 }
