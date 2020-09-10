@@ -22,7 +22,7 @@ export function handleOAuth() {
     code: code,
   })
     .then(response => {
-      saveUserSessionToStore({ ...response, name: response.email });
+      saveUserSessionToStore({ ...response.data, name: response.data.email });
       window.location.replace('/');
     })
     .catch(drawAuthHandlerError);
