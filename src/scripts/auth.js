@@ -8,6 +8,7 @@ export function restoreUserSession() {
     updateNavUser();
     return;
   }
+  Axios.defaults.headers.common['Authorization'] = `Bearer ${sessionInfo.access}`;
 
   refreshAccessToken(sessionInfo.refresh).then(hasAccess => {
     updateNavUser();
