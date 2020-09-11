@@ -22,7 +22,11 @@ export function handleOAuth() {
     code: code,
   })
     .then(response => {
-      saveUserSessionToStore({ ...response.data, name: response.data.email });
+      const userSession = response.data;
+      if (!userSession.name) {
+        userSession.name = userSession.email;
+      }
+      saveUserSessionToStore(userSession);
       window.location.replace('/');
     })
     .catch(drawAuthHandlerError);
