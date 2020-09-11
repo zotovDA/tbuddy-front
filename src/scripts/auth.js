@@ -8,7 +8,6 @@ export function restoreUserSession() {
     updateNavUser();
     return;
   }
-  Axios.defaults.headers.common['Authorization'] = `Bearer ${sessionInfo.access}`;
 
   refreshAccessToken(sessionInfo.refresh).then(hasAccess => {
     updateNavUser();
@@ -24,10 +23,11 @@ export function restoreUserSession() {
 
 async function refreshAccessToken(refreshToken) {
   try {
-    const token = await Axios.post('/auth/token/refresh/', {
+    const response = await Axios.post('/auth/token/refresh/', {
       refresh: refreshToken,
     });
-
+    const token = response.access;
+    if (typeof token !== 'string') throw 'incorrect token';
     updateAccessTokenToStore(token);
     Axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
