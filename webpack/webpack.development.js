@@ -22,10 +22,26 @@ const development = {
     }),
     new HtmlWebpackPlugin({
       filename: 'login.html',
-      chunks: ['common'],
+      chunks: ['login'],
       template: 'login.hbs',
       templateParameters: {
         title: 'T-Buddy | Authentification'
+      }
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'reset.html',
+      chunks: ['reset'],
+      template: 'reset.hbs',
+      templateParameters: {
+        title: 'T-Buddy | Restore access'
+      }
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'resetConfirm.html',
+      chunks: ['resetConfirm'],
+      template: 'resetConfirm.hbs',
+      templateParameters: {
+        title: 'T-Buddy | Restore access'
       }
     }),
     new HtmlWebpackPlugin({

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+{{> templates/head title=title}}
+
+<body>
+  <main>
+    {{> templates/header/header}}
+
+    <div class="container">
+      <div class="col-md-8 col-lg-6 mx-auto mt-5">
+        <div class="card">
+          <div class="card-header">
+            Reset your password
+          </div>
+          <div class="card-body">
+            <form action="" id="js-reset-confirm-form" novalidate>
+              <div class="mb-3">
+                <label for="reset-password" class="form-label">New password</label>
+                <input name="password" type="password" required class="form-control" id="reset-password">
+                <div class="invalid-feedback">
+                  Please provide secured password. It must be 8+ characters long.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="reset-password-repeat" class="form-label">Repeat password</label>
+                <input name="password-repeat" type="password" required class="form-control" id="reset-password-repeat">
+                <div class="invalid-feedback">
+                  Passwords don't match.
+                </div>
+              </div>
+              <div class="form-feedback invalid-feedback"></div>
+              <button type="submit" class="btn btn-primary mt-2">Reset</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  {{> templates/footer}}
+</body>
+
+</html>

@@ -10,13 +10,22 @@ export function restoreUserSession() {
   }
 
   refreshAccessToken(sessionInfo.refresh).then(hasAccess => {
-    updateNavUser();
     if (!hasAccess) {
       showPageError([{ title: 'Authorization error', message: 'User session expired.' }]);
       return;
     }
+    updateNavUser({ name: sessionInfo.user.name });
 
-    setInterval(() => refreshAccessToken(sessionInfo), 4.59 * (60 ^ 2) * 1000);
+    // every 4mins
+    const refreshTokenInterval = setInterval(function refreshTokenPeriodicaly() {
+      refreshAccessToken(sessionInfo.refresh).then(hasAccess => {
+        if (!hasAccess) {
+          clearInterval(refreshTokenInterval);
+          showPageError([{ title: 'Authorization error', message: 'User session expired.' }]);
+        }
+      });
+    }, 4 * (60 ^ 2) * 1000);
+
     initLogoutBinds();
   });
 }
@@ -26,7 +35,7 @@ async function refreshAccessToken(refreshToken) {
     const response = await Axios.post('/auth/token/refresh/', {
       refresh: refreshToken,
     });
-    const token = response.access;
+    const token = response.data.access;
     if (typeof token !== 'string') throw 'incorrect token';
     updateAccessTokenToStore(token);
     Axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;

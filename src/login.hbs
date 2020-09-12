@@ -16,10 +16,95 @@
             <a class="btn btn-primary"
               href="https://accounts.google.com/o/oauth2/auth?client_id=1077208082045-u336toqkg2cv164n4dsjj4sqrsop4bf2.apps.googleusercontent.com&redirect_uri=https://travelbuddy.io/auth.html&response_type=code&state=google-oauth2&scope=https://www.googleapis.com/auth/userinfo.email+https://www.googleapis.com/auth/userinfo.profile+openid+email+profile+https://www.googleapis.com/auth/user.gender.read+https://www.googleapis.com/auth/user.birthday.read">
               Sign in with Goggle</a>
+            <hr>
+
+            <p>Or use email</p>
+
+            <div id="email-auth">
+              <div class="card">
+                <div class="card-header" id="sign-in">
+                  <h2 class="mb-0">
+                    <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse"
+                      data-target="#sign-in-form" aria-expanded="true" aria-controls="sign-in-form">
+                      Sign in
+                    </button>
+                  </h2>
+                </div>
+
+                <div id="sign-in-form" class="collapse show" aria-labelledby="sign-in" data-parent="#email-auth">
+                  <div class="card-body">
+                    <form id="js-sign-in-form" action="#" novalidate>
+                      <div class="mb-3">
+                        <label for="sign-in-email" class="form-label">Email address</label>
+                        <input name="email" type="email" required class="form-control" id="sign-in-email">
+                        <div class="invalid-feedback">
+                          Please provide a valid email.
+                        </div>
+                      </div>
+                      <div class="mb-3">
+                        <label for="sign-in-password" class="form-label">Password</label>
+                        <input name="password" type="password" minlength="8" required class="form-control"
+                          id="sign-in-password">
+                        <div class="invalid-feedback">
+                          Please provide secured password. It must be 8+ characters long.
+                        </div>
+                        <div class="valid-feedback">
+                          Looks good!
+                        </div>
+                      </div>
+                      <div class="form-feedback invalid-feedback"></div>
+                      <button type="submit" class="btn btn-primary mt-2">Sign in</button>
+                      <a href="/reset.html" class="ml-2 align-middle text-muted">Forgot your password?</a>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header" id="sign-up">
+                  <h2 class="mb-0">
+                    <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse"
+                      data-target="#sign-up-form" aria-expanded="false" aria-controls="sign-up-form">
+                      Register
+                    </button>
+                  </h2>
+                </div>
+                <div id="sign-up-form" class="collapse" aria-labelledby="sign-up" data-parent="#email-auth">
+                  <div class="card-body">
+                    <form id="js-sign-up-form" action="#" novalidate>
+                      <div class="mb-3">
+                        <label for="sign-up-email" class="form-label">Email address</label>
+                        <input name="email" type="email" required class="form-control" id="sign-up-email">
+                        <div class="invalid-feedback">
+                          Please provide a valid email.
+                        </div>
+                      </div>
+                      <div class="mb-3">
+                        <label for="sign-up-password" class="form-label">Password</label>
+                        <input name="password" type="password" minlength="8" required class="form-control"
+                          id="sign-up-password">
+                        <div class="invalid-feedback">
+                          Please provide secured password. It must be 8+ characters long.
+                        </div>
+                      </div>
+                      <div class="mb-3">
+                        <label for="sign-up-password" class="form-label">Repeat password</label>
+                        <input name="password-repeat" type="password" required class="form-control"
+                          id="sign-up-password-repeat">
+                        <div class="invalid-feedback">
+                          Passwords don't match.
+                        </div>
+                      </div>
+                      <div class="form-feedback invalid-feedback"></div>
+                      <button type="submit" class="btn btn-primary">Sign up</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="card-footer text-muted">
-            {{!-- <a class="link-dark disabled" tabindex="-1" aria-disabled="true" href="javascript:void()">How my data
-              is used?</a> --}}
+            <a class="link-dark disabled" tabindex="-1" aria-disabled="true" href="javascript:void()">How my data
+              is used?</a>
           </div>
         </div>
       </div>
