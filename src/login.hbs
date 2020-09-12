@@ -87,15 +87,13 @@
                       </div>
                       <div class="mb-3">
                         <label for="sign-up-password" class="form-label">Repeat password</label>
-                        <input name="password-repeat" type="password" class="form-control"
+                        <input name="password-repeat" type="password" required class="form-control"
                           id="sign-up-password-repeat">
                         <div class="invalid-feedback">
                           Passwords don't match.
                         </div>
                       </div>
-                      <div class="form-error text-danger">
-                        Can't handle auth.
-                      </div>
+                      <div class="form-feedback invalid-feedback"></div>
                       <button type="submit" class="btn btn-primary">Sign up</button>
                     </form>
                   </div>

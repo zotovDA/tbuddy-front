@@ -16,17 +16,21 @@ function obtainToken(email, password) {
   return Axios.post('/auth/token/obtain/local/', {
     email: email,
     password: password,
-  }).then(response => {
-    const userSession = response.data;
-    const userData = getUserFromToken(userSession.access);
+  })
+    .then(response => {
+      const userSession = response.data;
+      const userData = getUserFromToken(userSession.access);
 
-    saveUserSessionToStore({
-      access: userSession.access,
-      refresh: userSession.refresh,
-      name: userData.name,
-      id: userData.id,
+      saveUserSessionToStore({
+        access: userSession.access,
+        refresh: userSession.refresh,
+        name: userData.name,
+        id: userData.id,
+      });
+    })
+    .then(() => {
+      window.location = '/';
     });
-  });
 }
 
 /** @param {Event} e */
@@ -44,14 +48,10 @@ function handleLocalSignIp(e) {
   const formData = new FormData(this);
   const authData = formDataToObj(formData);
 
-  obtainToken(authData.email, authData.password)
-    .then(() => {
-      // window.location = '/profile.html';
-    })
-    .catch(error => {
-      initApiErrorHandling(e.target, error.response.data);
-      submitButtonTemplate.restore();
-    });
+  obtainToken(authData.email, authData.password).catch(error => {
+    initApiErrorHandling(e.target, error.response.data);
+    submitButtonTemplate.restore();
+  });
 }
 
 /** @param {Event} e */
@@ -83,9 +83,7 @@ function handleLocalSignUp(e) {
       Axios.post('/auth/email/verify/', {
         email: authData.email,
       });
-      return obtainToken(authData.email, authData.password).then(() => {
-        window.location = '/profile.html';
-      });
+      return obtainToken(authData.email, authData.password);
     })
     .catch(error => {
       initApiErrorHandling(e.target, error.response.data);

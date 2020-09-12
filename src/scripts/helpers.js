@@ -59,7 +59,7 @@ export function initApiErrorHandling(form, response) {
   formError.classList.remove('d-block');
 
   if (response.detail) {
-    formError.innerHTML = (response && response.details) || 'Something unexpected happened';
+    formError.innerHTML = (response && response.detail) || 'Something unexpected happened';
     formError.classList.add('d-block');
     return;
   }
