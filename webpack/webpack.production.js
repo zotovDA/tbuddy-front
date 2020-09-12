@@ -35,11 +35,20 @@ const production = {
       minify: minifyOptions,
     }),
     new HtmlWebpackPlugin({
-      chunks: ['common'],
+      chunks: ['login'],
       filename: 'login.html',
       template: 'login.hbs',
       templateParameters: {
         title: 'T-Buddy | Authentification'
+      },
+      minify: minifyOptions,
+    }),
+    new HtmlWebpackPlugin({
+      chunks: ['reset'],
+      filename: 'reset.html',
+      template: 'reset.hbs',
+      templateParameters: {
+        title: 'T-Buddy | Restore access'
       },
       minify: minifyOptions,
     }),
