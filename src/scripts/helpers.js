@@ -35,6 +35,13 @@ export function getNameFromEmail(email) {
   return email.slice(0, email.indexOf('@'));
 }
 
+export function parseApiErrors(error) {
+  if (!error) return '';
+
+  const errorsList = error.non_field_errors || [''];
+  return error.detail || errorsList.join('\n');
+}
+
 export class TemplateManager {
   /** @param {Element} element */
   constructor(element) {
@@ -58,8 +65,8 @@ export function initApiErrorHandling(form, response) {
   form.classList.remove('was-validated');
   formError.classList.remove('d-block');
 
-  if (response.detail) {
-    formError.innerHTML = (response && response.detail) || 'Something unexpected happened';
+  if (response.detail || response.non_field_errors) {
+    formError.innerHTML = parseApiErrors(response) || 'Something unexpected happened';
     formError.classList.add('d-block');
     return;
   }
