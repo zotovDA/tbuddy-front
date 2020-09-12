@@ -37,6 +37,14 @@ const development = {
       }
     }),
     new HtmlWebpackPlugin({
+      filename: 'resetConfirm.html',
+      chunks: ['resetConfirm'],
+      template: 'resetConfirm.hbs',
+      templateParameters: {
+        title: 'T-Buddy | Restore access'
+      }
+    }),
+    new HtmlWebpackPlugin({
       filename: 'profile.html',
       chunks: ['profile'],
       template: 'profile.hbs',

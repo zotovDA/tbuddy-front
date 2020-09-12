@@ -13,18 +13,23 @@
             Reset your password
           </div>
           <div class="card-body">
-            <form action="" id="js-reset-form" novalidate>
+            <form action="" id="js-reset-confirm-form" novalidate>
               <div class="mb-3">
-                <label for="reset-email" class="form-label">Email address</label>
-                <input name="email" type="email" required class="form-control" id="reset-email">
+                <label for="reset-password" class="form-label">New password</label>
+                <input name="password" type="password" required class="form-control" id="reset-password">
                 <div class="invalid-feedback">
-                  Please provide a valid email.
+                  Please provide secured password. It must be 8+ characters long.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="reset-password-repeat" class="form-label">Repeat password</label>
+                <input name="password-repeat" type="password" required class="form-control" id="reset-password-repeat">
+                <div class="invalid-feedback">
+                  Passwords don't match.
                 </div>
               </div>
               <div class="form-feedback invalid-feedback"></div>
               <button type="submit" class="btn btn-primary mt-2">Reset</button>
-              <div class="form-text mt-2">After you press Reset button, you will receive email letter on your next steps
-                to recover your access.</div>
             </form>
           </div>
         </div>

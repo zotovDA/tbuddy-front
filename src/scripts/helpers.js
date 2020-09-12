@@ -58,14 +58,14 @@ export class TemplateManager {
   }
 }
 
-export function initApiErrorHandling(form, response) {
+export function initApiErrorHandling(form, response, forceError) {
   if (!response) return null;
   const formError = form.querySelector('.form-feedback.invalid-feedback');
   [...form.querySelectorAll('[name]')].forEach(input => input.classList.remove('is-invalid'));
   form.classList.remove('was-validated');
   formError.classList.remove('d-block');
 
-  if (response.detail || response.non_field_errors) {
+  if (forceError || response.detail || response.non_field_errors) {
     formError.innerHTML = parseApiErrors(response) || 'Something unexpected happened';
     formError.classList.add('d-block');
     return;

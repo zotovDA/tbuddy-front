@@ -9,6 +9,7 @@ module.exports = {
     auth: './scripts/authorization/index.js',
     login: './scripts/authorization/login.js',
     reset: './scripts/authorization/reset.js',
+    resetConfirm: './scripts/authorization/resetConfirm.js',
     profile: './scripts/profile/index.js',
     common: './scripts/common.js'
   },

@@ -53,6 +53,15 @@ const production = {
       minify: minifyOptions,
     }),
     new HtmlWebpackPlugin({
+      chunks: ['resetConfirm'],
+      filename: 'resetConfirm.html',
+      template: 'resetConfirm.hbs',
+      templateParameters: {
+        title: 'T-Buddy | Restore access'
+      },
+      minify: minifyOptions,
+    }),
+    new HtmlWebpackPlugin({
       chunks: ['profile'],
       filename: 'profile.html',
       template: 'profile.hbs',

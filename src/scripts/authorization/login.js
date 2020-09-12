@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const signInForm = document.getElementById('js-sign-in-form');
   const signUpForm = document.getElementById('js-sign-up-form');
 
-  signInForm.addEventListener('submit', handleLocalSignIp);
+  signInForm.addEventListener('submit', handleLocalSignIn);
   signUpForm.addEventListener('submit', handleLocalSignUp);
 });
 
@@ -34,7 +34,7 @@ function obtainToken(email, password) {
 }
 
 /** @param {Event} e */
-function handleLocalSignIp(e) {
+function handleLocalSignIn(e) {
   e.preventDefault();
   this.classList.remove('was-validated');
   if (!this.checkValidity()) {
