@@ -9,7 +9,7 @@ export function restoreUserSession() {
     return;
   }
 
-  refreshAccessToken(sessionInfo.refresh).then(hasAccess => {
+  return refreshAccessToken(sessionInfo.refresh).then(hasAccess => {
     if (!hasAccess) {
       showPageError([{ title: 'Authorization error', message: 'User session expired.' }]);
       return;
@@ -24,7 +24,7 @@ export function restoreUserSession() {
           showPageError([{ title: 'Authorization error', message: 'User session expired.' }]);
         }
       });
-    }, 4 * (60 ^ 2) * 1000);
+    }, 240000);
 
     initLogoutBinds();
   });

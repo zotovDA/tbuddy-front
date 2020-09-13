@@ -27,10 +27,10 @@ function handleOAuth() {
   })
     .then(response => {
       const userSession = response.data;
-      const userData = getUserFromToken(userSession.access);
+      const userData = getUserFromToken(userSession.token);
 
       saveUserSessionToStore({
-        access: userSession.access,
+        access: userSession.token,
         refresh: userSession.refresh,
         name: userData.name,
         id: userData.id,
@@ -51,7 +51,7 @@ function handleLocalAuth() {
     uidb64: uidb64,
   })
     .then(() => {
-      window.location.replace('/');
+      window.location.replace('/profile.html?fromRegister');
     })
     .catch(error => drawAuthHandlerError(parseApiErrors(error.response.data)));
 }
