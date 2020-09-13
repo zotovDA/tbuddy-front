@@ -1,19 +1,76 @@
 <div class="row">
   <div class="col-12 col-md-4 col-lg-3">
-    <img style="min-height: 200px; max-height: 300px;" class="img-cover rounded profile-image" src='{{ photo }}' alt='profile photo' />
+    <img style="min-height: 200px; max-height: 300px;" class="img-cover rounded profile-image js-profile-image" src='{{ photo }}'
+      alt='profile photo' />
+
+    <ul class="list-group my-3">
+      <a href="javascript:void()" id="js-edit-primary" class="list-group-item list-group-item-action">Edit main info</a>
+      <a href="javascript:void()" data-toggle="modal" data-target="#photoChangeModal" id="js-edit-photo"
+        class="list-group-item list-group-item-action">Edit photo</a>
+      {{#if isBuddy}}
+      <a href="javascript:void()" id="js-edit-buddy" class="list-group-item list-group-item-action">Edit buddy info</a>
+      {{else}}
+      <a href="javascript:void()" id="js-edit-buddy" class="list-group-item list-group-item-action disabled">Become
+        buddy</a>
+      {{/if}}
+    </ul>
   </div>
   <div class="col-12 col-md-8 col-lg-6">
-    <h1>{{ name }} <small class="text-muted">{{ age }}</small></h1>
-    <h4>From {{ country }}</h4>
+    <h1>{{ firstname }} {{ surname }} <small class="text-muted">{{ age }} years</small></h1>
+    {{#if place}}
+    <h4>From {{ place }}</h4>
+    {{/if}}
     <div class="profile-skills">
       {{#each skills }}
       <span class="badge bg-primary">{{ this }}</span>
       {{/each}}
     </div>
     <p class="profile-about">{{ bio }}</p>
+  </div>
+</div>
 
-    <div class="profile-controls">
-      <button class="js-profile-edit btn btn-primary">Edit</button>
+{{!-- Edit photo --}}
+<div class="modal fade" id="photoChangeModal" tabindex="-1" aria-labelledby="edit-photo-modal" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-fullscreen-md-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="edit-photo-modal">Choose your photo</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form novalidate id="js-photo-edit-modal-form">
+          <div class="form-file form-file-lg">
+            <input required name="image" accept="image/*" type="file" class="form-file-input" id="profile-photo">
+            <label class="form-file-label" for="profile-photo">
+              <span class="form-file-text">Choose photo...</span>
+              <span class="form-file-button">Browse</span>
+            </label>
+            <div class="invalid-feedback">Please choose your photo</div>
+          </div>
+          <div class="form-text mb-3">Make sure your face is centered in the frames below</div>
+
+          <div id="js-profile-photo-preview" class="d-none">
+            <h6>Preview</h6>
+            <div class="mb-3 row">
+              <div style="max-height: 100px" class="d-sm-block d-none col-lg-2 col-md-2 col-sm-2 col-12">
+                <img src="" alt="profile photo preview" class="img-cover">
+              </div>
+              <div style="max-height: 200px" class="d-sm-block d-none col-lg-3 col-md-3 col-sm-4 col-12">
+                <img src="" alt="profile photo preview" class="img-cover">
+              </div>
+              <div style="max-height: 300px" class="col-lg-7 col-md-6 col-sm-6 col-12">
+                <img src="" alt="profile photo preview" class="img-cover">
+              </div>
+            </div>
+          </div>
+          <div id="form-message" class="mb-3"></div>
+
+          <button type="submit" class="btn btn-primary">Update</button>
+          <button type="button" data-dismiss="modal" class="btn btn-secondary">Close</button>
+        </form>
+      </div>
     </div>
   </div>
 </div>

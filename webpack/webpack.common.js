@@ -88,7 +88,7 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: 'stylesheets/[name].[hash:8].css',
+      filename: '[name].[hash:8].css',
     }),
     new CopyWebpackPlugin([
       { from: paths.static },

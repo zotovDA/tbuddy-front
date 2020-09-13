@@ -2,7 +2,7 @@
   height: 100vh;
   position: relative;
   overflow: hidden;
-  background: url(http://unsplash.it/id/1001/1920/1080) center no-repeat;
+  background: url(../images/landing/banner.jpg) center no-repeat;
   background-size: cover;
 }
 
@@ -29,7 +29,7 @@
   right: 0;
   left: 0;
   bottom: 0;
-  background: url(http://unsplash.it/id/1001/1920/1080?blur) center no-repeat;
+  background: url(../images/landing/banner-blured.jpg) center no-repeat;
   background-size: cover;
   z-index: 0;
   opacity: 0;
