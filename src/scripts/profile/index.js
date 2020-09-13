@@ -147,13 +147,13 @@ function handleEditPhoto(e) {
   submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
 
   Axios({
-    method: 'post',
+    method: 'put',
     url: `/profiles/${getCurrentUserId()}/photo/`,
     data: formData,
     headers: { 'Content-Type': 'multipart/form-data' },
   })
-    .then(() => {
-      // TODO: load photo from api
+    .then(response => {
+      currentUser.photo = response.data.image;
       initStep3();
     })
     .catch(error => {
