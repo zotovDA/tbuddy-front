@@ -147,13 +147,13 @@ function handleEditPhoto(e) {
   submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
 
   Axios({
-    method: 'post',
+    method: 'put',
     url: `/profiles/${getCurrentUserId()}/photo/`,
     data: formData,
     headers: { 'Content-Type': 'multipart/form-data' },
   })
-    .then(() => {
-      // TODO: load photo from api
+    .then(response => {
+      currentUser.photo = response.data.image;
       initStep3();
     })
     .catch(error => {
@@ -164,12 +164,14 @@ function handleEditPhoto(e) {
 
 function initStep3() {
   profileContainer.innerHTML = profileEditStep3Template();
-  document.getElementById('js-profile-edit-form').addEventListener('submit', handleEditPhoto);
-  document.getElementById('js-profile-step3-skip').addEventListener('click', initStep4);
+  document.getElementById('js-step-skip').addEventListener('click', initStep4);
 }
 
 function initStep4() {
   profileContainer.innerHTML = profileEditStep4Template();
+  document.getElementById('js-to-profile').addEventListener('click', function() {
+    drawUserProfile(currentUser);
+  });
 }
 
 export function initUserProfileFromCache() {
@@ -215,8 +217,10 @@ export function onEditUserSubmit(e) {
  * @param {{name: string, photo: string, bio: string, birthdate: string, skills: string[]}} user fetched user
  */
 function drawUserProfile(user) {
-  const profileNode = document.getElementById('js-user-profile');
-  profileNode.innerHTML = profileTemplate({ ...user, age: moment(user.birthdate).toNow(true) });
+  profileContainer.innerHTML = profileTemplate({
+    ...user,
+    age: moment(user.birthdate).toNow(true),
+  });
 }
 
 function drawUserEditProfile(user) {
