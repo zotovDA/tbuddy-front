@@ -35,7 +35,7 @@ function handleOAuth() {
         name: userData.name,
         id: userData.id,
       });
-      window.location.replace('/profile.html?fromRegister');
+      window.location.replace('/');
     })
     .catch(error => drawAuthHandlerError(parseApiErrors(error.response.data)));
 }
