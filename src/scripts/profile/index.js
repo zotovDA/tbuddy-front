@@ -5,6 +5,8 @@ import { formDataToObj, delay, initApiErrorHandling, TemplateManager } from '../
 
 import alertTemplate from '../../templates/alert.hbs';
 import profileEditStep2Template from '../../templates/profile/_step2.hbs';
+import profileEditStep3Template from '../../templates/profile/_step3.hbs';
+import profileEditStep4Template from '../../templates/profile/_step4.hbs';
 
 import profileTemplate from '../../templates/profile/userProfile.hbs';
 import profileEditTemplate from '../../templates/profile/profileEdit.hbs';
@@ -30,7 +32,6 @@ const urlParams = new URLSearchParams(queryString);
 
 let profileContainer;
 let currentUser = {};
-
 document.addEventListener('init', function() {
   profileContainer = document.getElementById('js-user-profile');
   if (!getCurrentUserId()) {
@@ -118,14 +119,57 @@ function initStep2() {
   profileContainer.innerHTML = profileEditStep2Template();
   document.getElementById('js-profile-edit-form').addEventListener('submit', handleEditPhoto);
   document.getElementById('js-profile-step2-skip').addEventListener('click', initStep3);
+  document.getElementById('profile-photo').addEventListener('change', function() {
+    if (this.files[0]) {
+      var reader = new FileReader();
+
+      reader.onload = function(e) {
+        document.getElementById('js-profile-photo-preview').classList.remove('d-none');
+        const previewImgs = [...document.querySelectorAll('#js-profile-photo-preview img')];
+        previewImgs.forEach(item => (item.src = e.target.result));
+      };
+      reader.readAsDataURL(this.files[0]);
+    }
+  });
 }
 
-function handleEditPhoto() {
-  // TODO: handle photo change
+function handleEditPhoto(e) {
+  e.preventDefault();
+  this.classList.remove('was-validated');
+  if (!this.checkValidity()) {
+    this.classList.add('was-validated');
+    return;
+  }
+
+  const formData = new FormData(this);
+
+  const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
+  submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
+
+  Axios({
+    method: 'post',
+    url: `/profiles/${getCurrentUserId()}/photo/`,
+    data: formData,
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+    .then(() => {
+      // TODO: load photo from api
+      initStep3();
+    })
+    .catch(error => {
+      initApiErrorHandling(e.target, error.response.data);
+      submitButtonTemplate.restore();
+    });
 }
 
 function initStep3() {
-  // TODO: step3 template
+  profileContainer.innerHTML = profileEditStep3Template();
+  document.getElementById('js-profile-edit-form').addEventListener('submit', handleEditPhoto);
+  document.getElementById('js-profile-step3-skip').addEventListener('click', initStep4);
+}
+
+function initStep4() {
+  profileContainer.innerHTML = profileEditStep4Template();
 }
 
 export function initUserProfileFromCache() {
