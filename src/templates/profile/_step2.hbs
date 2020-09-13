@@ -1,0 +1,36 @@
+<div class="col-12 col-md-10 col-lg-8 mx-auto">
+  <h3>Complete your registration</h3>
+  <div class="progress mb-5">
+    <div class="progress-bar progress-bar-striped progress-bar-animated w-50" role="progressbar"></div>
+  </div>
+  <form novalidate id="js-profile-edit-form">
+    <h4>Upload your photo</h4>
+    <div class="form-file form-file-lg">
+      <input required name="image" accept="image/*" type="file" class="form-file-input" id="profile-photo">
+      <label class="form-file-label" for="profile-photo">
+        <span class="form-file-text">Choose photo...</span>
+        <span class="form-file-button">Browse</span>
+      </label>
+      <div class="invalid-feedback">Please choose your photo</div>
+    </div>
+    <div class="form-text mb-3">Make sure your face is centered in the frames below</div>
+
+    <div id="js-profile-photo-preview" class="d-none">
+      <h6>Preview</h6>
+      <div class="mb-3 row">
+        <div style="max-height: 100px" class="d-sm-block d-none col-lg-2 col-md-2 col-sm-2 col-12">
+          <img src="" alt="profile photo preview" class="img-cover">
+        </div>
+        <div style="max-height: 200px" class="d-sm-block d-none col-lg-3 col-md-3 col-sm-4 col-12">
+          <img src="" alt="profile photo preview" class="img-cover">
+        </div>
+        <div style="max-height: 300px" class="col-lg-7 col-md-6 col-sm-6 col-12">
+          <img src="" alt="profile photo preview" class="img-cover">
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Next</button>
+    <button id="js-profile-step2-skip" type="button" class="btn btn-secondary">Skip</button>
+  </form>
+</div>

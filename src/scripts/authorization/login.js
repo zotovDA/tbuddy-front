@@ -69,6 +69,8 @@ function handleLocalSignUp(e) {
   if (authData['password'] !== authData['password-repeat']) {
     this.querySelector('[name=password-repeat]').classList.add('is-invalid');
     return;
+  } else {
+    this.querySelector('[name=password-repeat]').classList.remove('is-invalid');
   }
 
   const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));

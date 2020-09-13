@@ -1,23 +1,63 @@
 <div class="col-12 col-md-10 col-lg-8 mx-auto">
-  <form class="js-profile-edit-form">
+  {{#if needCreate}}
+  <h3>Complete your registration</h3>
+  <div class="progress mb-5">
+    <div class="progress-bar progress-bar-striped progress-bar-animated w-25" role="progressbar"></div>
+  </div>
+  {{/if}}
+  <form id="js-profile-edit-form" novalidate>
+    <div class="row mb-3">
+      <div class="col-sm-6">
+        <label for="profile-firstname" class="form-label">Firstname</label>
+        <input required name="firstname" maxlength="50" value="{{ firstname }}" class="form-control" id="profile-firstname">
+        <div class="invalid-feedback">Please provide your firstname</div>
+      </div>
+      <div class="col-sm-6">
+        <label for="profile-surname" class="form-label">Surname</label>
+        <input required name="surname" maxlength="50" value="{{ surname }}" class="form-control" id="profile-surname">
+        <div class="invalid-feedback">Please provide your secondname</div>
+      </div>
+    </div>
     <div class="mb-3">
-      <label for="profile-name" class="form-label">Name</label>
-      <input name="name" value="{{ name }}" class="form-control" id="profile-name">
+      <div class="form-check-label mb-1">Gender</div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="gender" value="male" id="profile-gender-male" {{#unless female}} checked
+          {{/unless}}>
+        <label class="form-check-label" for="profile-gender-male">
+          Male
+        </label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="gender" value="female" id="profile-gender-female" {{#if female}} checked
+          {{/if}}>
+        <label class="form-check-label" for="profile-gender-female">
+          Female
+        </label>
+        <div class="invalid-feedback">Choose you gender</div>
+      </div>
     </div>
     <div class="mb-3">
       <label for="profile-birthdate" class="form-label">Date of birth</label>
-      <input type="date" name="birthdate" value="{{ birthdate }}" class="form-control" id="profile-birthdate">
-    </div>
-    <div class="mb-3">
-      <label for="profile-country" class="form-label">Your country</label>
-      <input name="country" value="{{ country }}" class="form-control" id="profile-country">
+      {{!-- TODO: add masked input --}}
+      <input required placeholder="dd/mm/yyyy" type="date" name="birthdate" value="{{ birthdate }}" class="form-control" id="profile-birthdate">
+      <div class="invalid-feedback">Please provide correct date of birthday in format dd/mm/yyyy</div>
     </div>
     <div class="mb-3">
       <label for="profile-bio" class="form-label">About</label>
-      <textarea name="bio" class="form-control" id="profile-bio" rows="3">{{ bio }}</textarea>
+      <textarea required
+        placeholder="Tell in few words about your hobbies, lifestyle, activities to buddies to make opinion about you!"
+        name="bio" class="form-control" maxlength="200" id="profile-bio" rows="3">{{ bio }}</textarea>
+        <div class="invalid-feedback">Please tell few words about yourself</div>
     </div>
+    <div class="mb-3 form-feedback invalid-feedback"></div>
 
-    <span id="js-profile-edit-form-submit"><button type="submit" class="btn btn-primary">Save</button></span>
-    <button type="button" class="js-profile-edit-cancel btn btn-secondary">Cancel</button>
+    <button type="submit" class="btn btn-primary">{{#if needCreate}}
+      Next
+      {{else}}
+      Save
+      {{/if}}</button>
+    {{#unless needCreate}}
+    <button type="button" class="js-profile-edit-cancel btn btn-secondary ml-3">Cancel</button>
+    {{/unless}}
   </form>
 </div>
