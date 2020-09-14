@@ -73,8 +73,12 @@ document.addEventListener('init', function() {
 
           isBuddy: userData.is_buddy,
         };
-
-        drawUserProfile();
+        if (userData.is_manual) {
+          drawUserProfile();
+        } else {
+          // user didn't finish registration
+          initRegistrationSteps(currentUser);
+        }
       })
       .catch(error => {
         if (error.response.status === 404) {
@@ -89,21 +93,33 @@ document.addEventListener('init', function() {
   }
 });
 
-function initRegistrationSteps() {
-  profileContainer.innerHTML = profileEditTemplate({ needCreate: true });
-  document.getElementById('js-profile-edit-form').addEventListener('submit', handleCreatingProfile);
+function initRegistrationSteps(userData) {
+  if (!userData) {
+    // new user
+    profileContainer.innerHTML = profileEditTemplate({ needCreate: true });
+    document
+      .getElementById('js-profile-edit-form')
+      .addEventListener('submit', handleCreatingProfile);
+  } else {
+    // social user
+    profileContainer.innerHTML = profileEditTemplate({ ...userData, needCreate: true });
+    document
+      .getElementById('js-profile-edit-form')
+      .addEventListener('submit', e => handleCreatingProfile(e, true));
+  }
 }
 
 /** @param {Event} e */
-function handleCreatingProfile(e) {
+function handleCreatingProfile(e, hasProfile) {
   e.preventDefault();
-  this.classList.remove('was-validated');
-  if (!this.checkValidity()) {
-    this.classList.add('was-validated');
+  const target = e.target;
+  target.classList.remove('was-validated');
+  if (!target.checkValidity()) {
+    target.classList.add('was-validated');
     return;
   }
 
-  const formData = new FormData(this);
+  const formData = new FormData(target);
   const data = formDataToObj(formData);
 
   const dobRegex = /^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/;
@@ -119,24 +135,28 @@ function handleCreatingProfile(e) {
         .format()
     )
   ) {
-    this.querySelector('[name=birthdate]').classList.remove('is-invalid');
+    target.querySelector('[name=birthdate]').classList.remove('is-invalid');
   } else {
-    this.querySelector('[name=birthdate]').classList.add('is-invalid');
+    target.querySelector('[name=birthdate]').classList.add('is-invalid');
     return;
   }
 
-  const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
+  const submitButtonTemplate = new TemplateManager(target.querySelector('button[type=submit]'));
   submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
 
-  Axios.post('/profiles/', {
-    first_name: data['firstname'],
-    last_name: data['surname'],
-    gender: data['gender'],
-    dob: moment(data['birthdate'], 'MM/DD/YYYY').format('YYYY-MM-DD'),
-    bio: data['bio'],
+  Axios({
+    method: hasProfile ? 'PUT' : 'POST',
+    url: hasProfile ? `/profiles/${getCurrentUserId()}/` : '/profiles/',
+    data: {
+      first_name: data['firstname'],
+      last_name: data['surname'],
+      gender: data['gender'],
+      dob: moment(data['birthdate'], 'MM/DD/YYYY').format('YYYY-MM-DD'),
+      bio: data['bio'],
+    },
   })
     .then(() => {
-      currentUser = { ...data };
+      currentUser = { ...currentUser, ...data };
       initStep2();
     })
     .catch(error => {
