@@ -1,7 +1,5 @@
 import { getCurrentUserId } from '../auth';
-import { drawPageError } from '../view';
-import { fetchUser } from '../../__mocks__/profile';
-import { formDataToObj, delay, initApiErrorHandling, TemplateManager } from '../helpers';
+import { formDataToObj, initApiErrorHandling, TemplateManager } from '../helpers';
 
 import alertTemplate from '../../templates/alert.hbs';
 import profileEditStep2Template from '../../templates/profile/_step2.hbs';
@@ -12,22 +10,12 @@ import profileSuccessEditTemplate from '../../templates/profile/editSuccessMessa
 
 import profileTemplate from '../../templates/profile/userProfile.hbs';
 import profileEditTemplate from '../../templates/profile/profileEdit.hbs';
-import saveLoadingButtonTemplate from '../../templates/buttons/processing.hbs';
 import processingTemplate from '../../templates/typo/processing.hbs';
 
 import moment from 'moment';
 
 import '../common';
-import { updateBinds } from '../binds';
 import Axios from 'axios';
-
-/**
- * TODO List:
- * - param in url to continue registration
- * - fetch user data
- * - edit photo
- * - becomde buddy
- */
 
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
@@ -224,50 +212,12 @@ function initStep4() {
   });
 }
 
-export function initUserProfileFromCache() {
-  drawUserProfile(currentUser);
-  initProfileBinds();
-}
-
-export function initUserProfile() {
-  const id = getCurrentUserId();
-  return fetchUser(id)
-    .then(response => {
-      currentUser = { ...response };
-
-      drawUserProfile(response);
-      initProfileBinds();
-    })
-    .catch(error => {
-      currentUser = {};
-      drawPageError(error);
-    });
-}
-
-export function initEditProfile() {
-  drawUserEditProfile(currentUser);
-  initProfileEditBinds();
-}
-
-/** @param {Event} e */
-export function onEditUserSubmit(e) {
-  e.preventDefault();
-  drawUserEditProfileLoader();
-
-  const formData = new FormData(e.target);
-  const userInfo = formDataToObj(formData);
-
-  return delay(1000).then(() => {
-    currentUser = { ...currentUser, ...userInfo };
-    initUserProfileFromCache();
-  });
-}
-
 function drawUserProfile() {
   profileContainer.innerHTML = profileTemplate({
     ...currentUser,
     age: moment().diff(moment(currentUser.birthdate, 'DD/MM/YYYY'), 'years'),
   });
+  // TODO: add become buddy btn
   document.getElementById('js-edit-primary').addEventListener('click', drawUserEditProfile);
   document
     .getElementById('js-photo-edit-modal-form')
@@ -377,23 +327,3 @@ function handleEditProfile(e) {
       submitButtonTemplate.restore();
     });
 }
-
-function drawUserEditProfileLoader() {
-  const profileNode = document.getElementById('js-profile-edit-form-submit');
-  profileNode.innerHTML = saveLoadingButtonTemplate({ text: 'Saving' });
-}
-
-const initProfileBinds = () => {
-  [...document.querySelectorAll('.js-profile-edit')].forEach(item => {
-    updateBinds(item, 'click', initEditProfile);
-  });
-};
-
-const initProfileEditBinds = () => {
-  [...document.querySelectorAll('.js-profile-edit-form')].forEach(item => {
-    updateBinds(item, 'submit', onEditUserSubmit);
-  });
-  [...document.querySelectorAll('.js-profile-edit-cancel')].forEach(item => {
-    updateBinds(item, 'click', initUserProfileFromCache);
-  });
-};
