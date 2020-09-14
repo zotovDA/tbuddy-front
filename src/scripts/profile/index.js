@@ -62,7 +62,7 @@ document.addEventListener('init', function() {
           firstname: userData.first_name,
           surname: userData.last_name,
           gender: userData.gender,
-          birthdate: moment(userData.dob).format('DD/MM/YYYY'),
+          birthdate: moment(userData.dob).format('MM/DD/YYYY'),
           bio: userData.bio,
           photo:
             userData.image ||
@@ -110,7 +110,7 @@ function handleCreatingProfile(e) {
   const currentYear = moment().get('year');
   if (
     dobRegex.test(data['birthdate']) &&
-    moment(data['birthdate']).isBetween(
+    moment(data['birthdate'], 'MM/DD/YYYY').isBetween(
       moment()
         .set('year', currentYear - 120)
         .format(),
@@ -132,7 +132,7 @@ function handleCreatingProfile(e) {
     first_name: data['firstname'],
     last_name: data['surname'],
     gender: data['gender'],
-    dob: moment(data['birthdate']).format('YYYY-MM-DD'),
+    dob: moment(data['birthdate'], 'MM/DD/YYYY').format('YYYY-MM-DD'),
     bio: data['bio'],
   })
     .then(() => {
@@ -344,7 +344,7 @@ function handleEditProfile(e) {
     first_name: data['firstname'],
     last_name: data['surname'],
     gender: data['gender'],
-    dob: moment(data['birthdate'], 'DD/MM/YYYY').format('YYYY-MM-DD'),
+    dob: moment(data['birthdate'], 'MM/DD/YYYY').format('YYYY-MM-DD'),
     bio: data['bio'],
   })
     .then(() => {
