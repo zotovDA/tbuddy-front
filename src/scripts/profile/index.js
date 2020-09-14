@@ -97,6 +97,68 @@ function initRegistrationSteps(userData) {
   }
 }
 
+function initStep2() {
+  profileContainer.innerHTML = profileEditStep2Template();
+  document.getElementById('js-profile-edit-form').addEventListener('submit', handleEditPhoto);
+  document.getElementById('js-profile-step2-skip').addEventListener('click', initStep3);
+  document.getElementById('profile-photo').addEventListener('change', function() {
+    if (this.files[0]) {
+      var reader = new FileReader();
+
+      reader.onload = function(e) {
+        document.getElementById('js-profile-photo-preview').classList.remove('d-none');
+        const previewImgs = [...document.querySelectorAll('#js-profile-photo-preview img')];
+        previewImgs.forEach(item => (item.src = e.target.result));
+      };
+      reader.readAsDataURL(this.files[0]);
+    }
+  });
+}
+
+function initStep3() {
+  profileContainer.innerHTML = profileEditStep3Template();
+  document.getElementById('js-step-skip').addEventListener('click', initStep4);
+}
+
+function initStep4() {
+  profileContainer.innerHTML = profileEditStep4Template();
+  document.getElementById('js-to-profile').addEventListener('click', function() {
+    drawUserProfile();
+  });
+}
+
+function drawUserProfile() {
+  profileContainer.innerHTML = profileTemplate({
+    ...currentUser,
+    age: moment().diff(moment(currentUser.birthdate, 'DD/MM/YYYY'), 'years'),
+  });
+  // TODO: add become buddy btn
+  document.getElementById('js-edit-primary').addEventListener('click', drawUserEditProfile);
+  document
+    .getElementById('js-photo-edit-modal-form')
+    .addEventListener('submit', handleModalEditPhoto);
+  document.getElementById('profile-photo').addEventListener('change', function() {
+    if (this.files[0]) {
+      var reader = new FileReader();
+
+      reader.onload = function(e) {
+        document.getElementById('js-profile-photo-preview').classList.remove('d-none');
+        const previewImgs = [...document.querySelectorAll('#js-profile-photo-preview img')];
+        previewImgs.forEach(item => (item.src = e.target.result));
+      };
+      reader.readAsDataURL(this.files[0]);
+    }
+  });
+}
+
+function drawUserEditProfile() {
+  profileContainer.innerHTML = profileEditTemplate(currentUser);
+  document.getElementById('js-profile-edit-form').addEventListener('submit', handleEditProfile);
+  [...document.getElementsByClassName('js-profile-edit-cancel')].forEach(item =>
+    item.addEventListener('click', drawUserProfile)
+  );
+}
+
 /** @param {Event} e */
 function handleCreatingProfile(e, hasProfile) {
   e.preventDefault();
@@ -153,130 +215,6 @@ function handleCreatingProfile(e, hasProfile) {
     });
 }
 
-function initStep2() {
-  profileContainer.innerHTML = profileEditStep2Template();
-  document.getElementById('js-profile-edit-form').addEventListener('submit', handleEditPhoto);
-  document.getElementById('js-profile-step2-skip').addEventListener('click', initStep3);
-  document.getElementById('profile-photo').addEventListener('change', function() {
-    if (this.files[0]) {
-      var reader = new FileReader();
-
-      reader.onload = function(e) {
-        document.getElementById('js-profile-photo-preview').classList.remove('d-none');
-        const previewImgs = [...document.querySelectorAll('#js-profile-photo-preview img')];
-        previewImgs.forEach(item => (item.src = e.target.result));
-      };
-      reader.readAsDataURL(this.files[0]);
-    }
-  });
-}
-
-function handleEditPhoto(e) {
-  e.preventDefault();
-  this.classList.remove('was-validated');
-  if (!this.checkValidity()) {
-    this.classList.add('was-validated');
-    return;
-  }
-
-  const formData = new FormData(this);
-
-  const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
-  submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
-
-  Axios({
-    method: 'put',
-    url: `/profiles/${getCurrentUserId()}/photo/`,
-    data: formData,
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
-    .then(response => {
-      currentUser.photo = response.data.image;
-      initStep3();
-    })
-    .catch(error => {
-      initApiErrorHandling(e.target, error.response.data);
-      submitButtonTemplate.restore();
-    });
-}
-
-function initStep3() {
-  profileContainer.innerHTML = profileEditStep3Template();
-  document.getElementById('js-step-skip').addEventListener('click', initStep4);
-}
-
-function initStep4() {
-  profileContainer.innerHTML = profileEditStep4Template();
-  document.getElementById('js-to-profile').addEventListener('click', function() {
-    drawUserProfile();
-  });
-}
-
-function drawUserProfile() {
-  profileContainer.innerHTML = profileTemplate({
-    ...currentUser,
-    age: moment().diff(moment(currentUser.birthdate, 'DD/MM/YYYY'), 'years'),
-  });
-  // TODO: add become buddy btn
-  document.getElementById('js-edit-primary').addEventListener('click', drawUserEditProfile);
-  document
-    .getElementById('js-photo-edit-modal-form')
-    .addEventListener('submit', handleModalEditPhoto);
-  document.getElementById('profile-photo').addEventListener('change', function() {
-    if (this.files[0]) {
-      var reader = new FileReader();
-
-      reader.onload = function(e) {
-        document.getElementById('js-profile-photo-preview').classList.remove('d-none');
-        const previewImgs = [...document.querySelectorAll('#js-profile-photo-preview img')];
-        previewImgs.forEach(item => (item.src = e.target.result));
-      };
-      reader.readAsDataURL(this.files[0]);
-    }
-  });
-}
-
-function handleModalEditPhoto(e) {
-  e.preventDefault();
-  this.classList.remove('was-validated');
-  if (!this.checkValidity()) {
-    this.classList.add('was-validated');
-    return;
-  }
-
-  const formData = new FormData(this);
-
-  const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
-  submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
-
-  Axios({
-    method: 'put',
-    url: `/profiles/${getCurrentUserId()}/photo/`,
-    data: formData,
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
-    .then(response => {
-      currentUser.photo = response.data.image;
-      [...document.getElementsByClassName('js-profile-image')].forEach(
-        item => (item.src = currentUser.photo)
-      );
-      document.getElementById('form-message').innerHTML = profileSuccessEditTemplate();
-      submitButtonTemplate.restore();
-    })
-    .catch(error => {
-      initApiErrorHandling(e.target, error.response.data);
-      submitButtonTemplate.restore();
-    });
-}
-
-function drawUserEditProfile() {
-  profileContainer.innerHTML = profileEditTemplate(currentUser);
-  document.getElementById('js-profile-edit-form').addEventListener('submit', handleEditProfile);
-  [...document.getElementsByClassName('js-profile-edit-cancel')].forEach(item =>
-    item.addEventListener('click', drawUserProfile)
-  );
-}
-
 function handleEditProfile(e) {
   e.preventDefault();
   this.classList.remove('was-validated');
@@ -319,6 +257,68 @@ function handleEditProfile(e) {
   })
     .then(() => {
       currentUser = { ...currentUser, ...data };
+      document.getElementById('form-message').innerHTML = profileSuccessEditTemplate();
+      submitButtonTemplate.restore();
+    })
+    .catch(error => {
+      initApiErrorHandling(e.target, error.response.data);
+      submitButtonTemplate.restore();
+    });
+}
+
+function handleEditPhoto(e) {
+  e.preventDefault();
+  this.classList.remove('was-validated');
+  if (!this.checkValidity()) {
+    this.classList.add('was-validated');
+    return;
+  }
+
+  const formData = new FormData(this);
+
+  const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
+  submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
+
+  Axios({
+    method: 'put',
+    url: `/profiles/${getCurrentUserId()}/photo/`,
+    data: formData,
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+    .then(response => {
+      currentUser.photo = response.data.image;
+      initStep3();
+    })
+    .catch(error => {
+      initApiErrorHandling(e.target, error.response.data);
+      submitButtonTemplate.restore();
+    });
+}
+
+function handleModalEditPhoto(e) {
+  e.preventDefault();
+  this.classList.remove('was-validated');
+  if (!this.checkValidity()) {
+    this.classList.add('was-validated');
+    return;
+  }
+
+  const formData = new FormData(this);
+
+  const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
+  submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
+
+  Axios({
+    method: 'put',
+    url: `/profiles/${getCurrentUserId()}/photo/`,
+    data: formData,
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+    .then(response => {
+      currentUser.photo = response.data.image;
+      [...document.getElementsByClassName('js-profile-image')].forEach(
+        item => (item.src = currentUser.photo)
+      );
       document.getElementById('form-message').innerHTML = profileSuccessEditTemplate();
       submitButtonTemplate.restore();
     })
