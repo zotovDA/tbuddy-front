@@ -5,7 +5,9 @@
     <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 33%;" role="progressbar"></div>
   </div>
   {{else}}
-  <a href="javascript:void()" class="js-profile-edit-cancel d-block mb-3">← Back to profile</a>
+  <div class="mb-3">
+    <a href="javascript:void()" class="js-profile-edit-cancel">← Back to profile</a>
+  </div>
   {{/if}}
   <form id="js-profile-edit-form" novalidate>
     <div class="row mb-3">
@@ -25,14 +27,14 @@
       <div class="form-check-label mb-1">Gender</div>
       <div class="form-check form-check-inline">
         <input class="form-check-input" type="radio" name="gender" value="male" id="profile-gender-male"
-          {{#unless female}} checked {{/unless}}>
+          {{#unless isFemale}} checked {{/unless}}>
         <label class="form-check-label" for="profile-gender-male">
           Male
         </label>
       </div>
       <div class="form-check form-check-inline">
         <input class="form-check-input" type="radio" name="gender" value="female" id="profile-gender-female"
-          {{#if female}} checked {{/if}}>
+          {{#if isFemale}} checked {{/if}}>
         <label class="form-check-label" for="profile-gender-female">
           Female
         </label>
@@ -42,7 +44,7 @@
     <div class="mb-3">
       <label for="profile-birthdate" class="form-label">Date of birth</label>
       {{!-- TODO: add masked input --}}
-      <input required placeholder="mm/dd/yyyy" type="date" name="birthdate" value="{{ birthdate }}" class="form-control"
+      <input required placeholder="mm/dd/yyyy" type="text" name="birthdate" value="{{ birthdate }}" class="form-control"
         id="profile-birthdate">
       <div class="invalid-feedback">Please provide correct date of birthday in format mm/dd/yyyy</div>
     </div>

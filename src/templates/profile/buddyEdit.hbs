@@ -1,0 +1,57 @@
+<div class="col-12 col-md-10 col-lg-8 mx-auto">
+  {{#unless needCreate}}
+    <div class="mb-3">
+      <a href="javascript:void()" class="js-profile-edit-cancel">← Back to profile</a>
+    </div>
+  {{/unless}}
+  <form id="js-profile-edit-form" novalidate>
+    <div class="mb-3">
+      <label for="profile-city" class="form-label">Your location</label>
+      <select name="city" class="form-select" id="profile-city">
+        <option value="">Start typing your city...</option>
+      </select>
+      <div class="form-text">Make sure that it's your current location</div>
+      <div class="invalid-feedback">Please choose your city</div>
+    </div>
+    <div class="mb-3">
+      <div class="form-label">Choose your skills</div>
+      {{#each profileSkills }}
+      <div class="form-check form-check-inline">
+        <input {{#if checked}} checked {{/if}} name="skills" class="form-check-input" type="checkbox"
+          id="skill-{{ label }}" value="{{ label }}">
+        <label class="form-check-label" for="skill-{{ label }}">{{ label }}</label>
+      </div>
+      {{/each}}
+      <div class="invalid-feedback">Please choose something</div>
+    </div>
+    <div class="mb-3">
+      <label for="profile-contacts" class="form-label">Contacts</label>
+      <textarea required placeholder="Write your contacts so that travellers could discuss details with you"
+        name="contacts" class="form-control" maxlength="200" id="profile-contacts" rows="3">{{ contacts }}</textarea>
+      <div class="form-text">Your contact information will be invisible unless you response on request. After that owner
+        of request will see your contact infromation.</div>
+      <div class="invalid-feedback">Please leave your contact information</div>
+    </div>
+    <div class="mb-3">
+      <label for="profile-bio" class="form-label">About</label>
+      <textarea required
+        placeholder="Tell in few words about your hobbies, lifestyle, activities to buddies to make opinion about you!"
+        name="bio" class="form-control" maxlength="200" id="profile-bio" rows="3">{{ bio }}</textarea>
+      <div class="form-text">Think about changing your biography to be friendly to the travellers.</div>
+      <div class="invalid-feedback">Please tell few words about yourself</div>
+    </div>
+    <div class="mb-3 form-feedback invalid-feedback"></div>
+    <div id="form-message" class="mb-3"></div>
+
+    <button type="submit" class="btn btn-primary">
+      {{#if needCreate}}
+        Save
+      {{else}}
+        Update
+      {{/if}}
+    </button>
+    {{#unless needCreate}}
+      <button type="button" class="js-profile-edit-cancel btn btn-secondary ml-3">Cancel</button>
+    {{/unless}}
+  </form>
+</div>
