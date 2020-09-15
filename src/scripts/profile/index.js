@@ -126,6 +126,9 @@ function initStep2() {
 
 function initStep3() {
   profileContainer.innerHTML = profileEditStep3Template();
+  document
+    .getElementById('js-create-buddy')
+    .addEventListener('click', () => drawBuddyEditProfile(true));
   document.getElementById('js-step-skip').addEventListener('click', initStep4);
 }
 
@@ -141,7 +144,7 @@ function drawUserProfile() {
     ...currentUser,
     age: moment().diff(moment(currentUser.birthdate, 'DD/MM/YYYY'), 'years'),
   });
-  document.getElementById('js-edit-buddy').addEventListener('click', drawBuddyEditProfile);
+  document.getElementById('js-edit-buddy').addEventListener('click', () => drawBuddyEditProfile());
   document.getElementById('js-edit-primary').addEventListener('click', drawUserEditProfile);
   document
     .getElementById('js-photo-edit-modal-form')
@@ -171,7 +174,7 @@ function drawUserEditProfile() {
   );
 }
 
-function drawBuddyEditProfile() {
+function drawBuddyEditProfile(needCreate) {
   profileContainer.innerHTML = editBuddyTemplate({
     ...currentUser,
     profileSkills: ['misc', 'culture', 'club', 'food', 'sport', 'tourism', 'hotel', 'shopping'].map(
@@ -180,10 +183,11 @@ function drawBuddyEditProfile() {
         checked: currentUser.skills.some(item => skill === item),
       })
     ),
+    needCreate: needCreate,
   });
   document
     .getElementById('js-profile-edit-form')
-    .addEventListener('submit', handleEditBuddyProfile);
+    .addEventListener('submit', e => handleEditBuddyProfile(e, needCreate));
   [...document.getElementsByClassName('js-profile-edit-cancel')].forEach(item =>
     item.addEventListener('click', drawUserProfile)
   );
@@ -225,25 +229,26 @@ function drawBuddyEditProfile() {
   );
 }
 
-function handleEditBuddyProfile(e) {
+function handleEditBuddyProfile(e, inRegister) {
   e.preventDefault();
-  this.classList.remove('was-validated');
-  if (!this.checkValidity()) {
-    this.classList.add('was-validated');
+  const target = e.target;
+  target.classList.remove('was-validated');
+  if (!target.checkValidity()) {
+    target.classList.add('was-validated');
     return;
   }
 
-  const formData = new FormData(this);
+  const formData = new FormData(target);
   const data = formDataToObj(formData);
 
   if (data['city'] === '') {
-    this.querySelector('.choices ~ .invalid-feedback').classList.add('d-block');
+    target.querySelector('.choices ~ .invalid-feedback').classList.add('d-block');
     return;
   } else {
-    this.querySelector('.choices ~ .invalid-feedback').classList.remove('d-block');
+    target.querySelector('.choices ~ .invalid-feedback').classList.remove('d-block');
   }
 
-  const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
+  const submitButtonTemplate = new TemplateManager(target.querySelector('button[type=submit]'));
   submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
 
   Axios.patch(`/profiles/${getCurrentUserId()}/`, {
@@ -257,8 +262,12 @@ function handleEditBuddyProfile(e) {
   })
     .then(() => {
       currentUser = { ...currentUser, ...data };
-      document.getElementById('form-message').innerHTML = profileSuccessEditTemplate();
-      submitButtonTemplate.restore();
+      if (inRegister) {
+        initStep4();
+      } else {
+        document.getElementById('form-message').innerHTML = profileSuccessEditTemplate();
+        submitButtonTemplate.restore();
+      }
     })
     .catch(error => {
       initApiErrorHandling(e.target, error.response.data);

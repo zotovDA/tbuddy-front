@@ -1,5 +1,9 @@
 <div class="col-12 col-md-10 col-lg-8 mx-auto">
-  <a href="javascript:void()" class="js-profile-edit-cancel d-block mb-3">← Back to profile</a>
+  {{#unless needCreate}}
+    <div class="mb-3">
+      <a href="javascript:void()" class="js-profile-edit-cancel">← Back to profile</a>
+    </div>
+  {{/unless}}
   <form id="js-profile-edit-form" novalidate>
     <div class="mb-3">
       <label for="profile-city" class="form-label">Your location</label>
@@ -39,7 +43,15 @@
     <div class="mb-3 form-feedback invalid-feedback"></div>
     <div id="form-message" class="mb-3"></div>
 
-    <button type="submit" class="btn btn-primary">Update</button>
-    <button type="button" class="js-profile-edit-cancel btn btn-secondary ml-3">Cancel</button>
+    <button type="submit" class="btn btn-primary">
+      {{#if needCreate}}
+        Save
+      {{else}}
+        Update
+      {{/if}}
+    </button>
+    {{#unless needCreate}}
+      <button type="button" class="js-profile-edit-cancel btn btn-secondary ml-3">Cancel</button>
+    {{/unless}}
   </form>
 </div>
