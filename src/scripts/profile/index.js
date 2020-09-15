@@ -161,7 +161,10 @@ function drawUserProfile() {
 }
 
 function drawUserEditProfile() {
-  profileContainer.innerHTML = profileEditTemplate(currentUser);
+  profileContainer.innerHTML = profileEditTemplate({
+    ...currentUser,
+    isFemale: currentUser.gender !== 'male',
+  });
   document.getElementById('js-profile-edit-form').addEventListener('submit', handleEditProfile);
   [...document.getElementsByClassName('js-profile-edit-cancel')].forEach(item =>
     item.addEventListener('click', drawUserProfile)
@@ -171,7 +174,12 @@ function drawUserEditProfile() {
 function drawBuddyEditProfile() {
   profileContainer.innerHTML = editBuddyTemplate({
     ...currentUser,
-    profileSkills: ['misc', 'culture', 'club', 'food', 'sport', 'tourism', 'hotel', 'shopping'],
+    profileSkills: ['misc', 'culture', 'club', 'food', 'sport', 'tourism', 'hotel', 'shopping'].map(
+      skill => ({
+        label: skill,
+        checked: currentUser.skills.some(item => skill === item),
+      })
+    ),
   });
   document
     .getElementById('js-profile-edit-form')
@@ -187,6 +195,16 @@ function drawBuddyEditProfile() {
     searchChoices: false,
     shouldSort: false,
   });
+
+  if (currentUser.city) {
+    choices.setValue([
+      {
+        value: currentUser.city,
+        label: currentUser.place,
+      },
+    ]);
+  }
+
   citySelect.addEventListener(
     'search',
     debounce(function({ detail }) {
