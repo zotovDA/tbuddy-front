@@ -1,3 +1,4 @@
+import Axios from 'axios';
 import jwt_decode from 'jwt-decode';
 
 export function handleGoBack() {
@@ -13,7 +14,15 @@ export function getURLParams() {
 export function formDataToObj(formData = {}) {
   let object = {};
   formData.forEach((value, key) => {
-    object[key] = value;
+    if (object[key]) {
+      if (typeof object[key] === 'string') {
+        object[key] = [object[key], value];
+      } else {
+        object[key] = [...object[key], value];
+      }
+    } else {
+      object[key] = value;
+    }
   });
 
   return object;
@@ -56,6 +65,34 @@ export class TemplateManager {
   restore() {
     this.element.innerHTML = this.initialState;
   }
+}
+
+export function debounce(f, ms) {
+  let isCooldown = false;
+
+  return function() {
+    if (isCooldown) return;
+
+    f.apply(this, arguments);
+
+    isCooldown = true;
+
+    setTimeout(() => (isCooldown = false), ms);
+  };
+}
+
+export function searchCity(value) {
+  return Axios.get('/geo/cities/', {
+    params: {
+      search: value,
+    },
+  })
+    .then(response => {
+      return response.data.results;
+    })
+    .catch(() => {
+      return [];
+    });
 }
 
 export function initApiErrorHandling(form, response, forceError) {

@@ -1,5 +1,13 @@
 import { getCurrentUserId } from '../auth';
-import { formDataToObj, initApiErrorHandling, TemplateManager } from '../helpers';
+import {
+  formDataToObj,
+  initApiErrorHandling,
+  searchCity,
+  TemplateManager,
+  debounce,
+} from '../helpers';
+import Choices from 'choices.js';
+import 'choices.js/public/assets/styles/choices.min.css';
 
 import alertTemplate from '../../templates/alert.hbs';
 import profileEditStep2Template from '../../templates/profile/_step2.hbs';
@@ -9,6 +17,7 @@ import profileEditStep4Template from '../../templates/profile/_step4.hbs';
 import profileSuccessEditTemplate from '../../templates/profile/editSuccessMessage.hbs';
 
 import profileTemplate from '../../templates/profile/userProfile.hbs';
+import editBuddyTemplate from '../../templates/profile/buddyEdit.hbs';
 import profileEditTemplate from '../../templates/profile/profileEdit.hbs';
 import processingTemplate from '../../templates/typo/processing.hbs';
 
@@ -29,6 +38,7 @@ let currentUser = {
   bio: '',
   photo: '',
   place: '',
+  city: '',
   skills: [],
   contacts: '',
 
@@ -52,11 +62,10 @@ document.addEventListener('init', function() {
           gender: userData.gender,
           birthdate: moment(userData.dob).format('MM/DD/YYYY'),
           bio: userData.bio,
-          photo:
-            userData.image ||
-            'https://images.unsplash.com/photo-1509304890243-11f891c4270c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1050&q=80',
-          place: userData.city,
-          skills: userData.skills,
+          photo: userData.image,
+          place: userData.city && userData.city.display_name,
+          city: userData.city && userData.city.id,
+          skills: userData.skills.map(skill => skill.activity),
           contacts: userData.contacts,
 
           isBuddy: userData.is_buddy,
@@ -132,7 +141,7 @@ function drawUserProfile() {
     ...currentUser,
     age: moment().diff(moment(currentUser.birthdate, 'DD/MM/YYYY'), 'years'),
   });
-  // TODO: add become buddy btn
+  document.getElementById('js-edit-buddy').addEventListener('click', drawBuddyEditProfile);
   document.getElementById('js-edit-primary').addEventListener('click', drawUserEditProfile);
   document
     .getElementById('js-photo-edit-modal-form')
@@ -157,6 +166,86 @@ function drawUserEditProfile() {
   [...document.getElementsByClassName('js-profile-edit-cancel')].forEach(item =>
     item.addEventListener('click', drawUserProfile)
   );
+}
+
+function drawBuddyEditProfile() {
+  profileContainer.innerHTML = editBuddyTemplate({
+    ...currentUser,
+    profileSkills: ['misc', 'culture', 'club', 'food', 'sport', 'tourism', 'hotel', 'shopping'],
+  });
+  document
+    .getElementById('js-profile-edit-form')
+    .addEventListener('submit', handleEditBuddyProfile);
+  [...document.getElementsByClassName('js-profile-edit-cancel')].forEach(item =>
+    item.addEventListener('click', drawUserProfile)
+  );
+
+  const citySelect = document.getElementById('profile-city');
+  const choices = new Choices(citySelect, {
+    noChoicesText: 'No cities found',
+    duplicateItemsAllowed: false,
+    searchChoices: false,
+    shouldSort: false,
+  });
+  citySelect.addEventListener(
+    'search',
+    debounce(function({ detail }) {
+      const value = detail.value;
+      if (!value || value.length < 2) {
+        return;
+      }
+
+      searchCity(value).then(citiesList => {
+        choices.setChoices(
+          citiesList.map(city => ({ value: city.id, label: city.display_name })),
+          'value',
+          'label',
+          true
+        );
+      });
+    }, 500)
+  );
+}
+
+function handleEditBuddyProfile(e) {
+  e.preventDefault();
+  this.classList.remove('was-validated');
+  if (!this.checkValidity()) {
+    this.classList.add('was-validated');
+    return;
+  }
+
+  const formData = new FormData(this);
+  const data = formDataToObj(formData);
+
+  if (data['city'] === '') {
+    this.querySelector('.choices ~ .invalid-feedback').classList.add('d-block');
+    return;
+  } else {
+    this.querySelector('.choices ~ .invalid-feedback').classList.remove('d-block');
+  }
+
+  const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
+  submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
+
+  Axios.patch(`/profiles/${getCurrentUserId()}/`, {
+    bio: data['bio'],
+    city_id: parseInt(data['city']),
+    contacts: data['contacts'],
+    skills:
+      typeof data['skills'] === 'string'
+        ? [{ activity: data['skills'] }]
+        : data['skills'].map(skill => ({ activity: skill })),
+  })
+    .then(() => {
+      currentUser = { ...currentUser, ...data };
+      document.getElementById('form-message').innerHTML = profileSuccessEditTemplate();
+      submitButtonTemplate.restore();
+    })
+    .catch(error => {
+      initApiErrorHandling(e.target, error.response.data);
+      submitButtonTemplate.restore();
+    });
 }
 
 /** @param {Event} e */
@@ -248,7 +337,7 @@ function handleEditProfile(e) {
   const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
   submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
 
-  Axios.put(`/profiles/${getCurrentUserId()}/`, {
+  Axios.patch(`/profiles/${getCurrentUserId()}/`, {
     first_name: data['firstname'],
     last_name: data['surname'],
     gender: data['gender'],
