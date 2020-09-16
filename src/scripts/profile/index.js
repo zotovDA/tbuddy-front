@@ -22,6 +22,7 @@ import profileEditTemplate from '../../templates/profile/profileEdit.hbs';
 import processingTemplate from '../../templates/typo/processing.hbs';
 
 import moment from 'moment';
+import IMask from 'imask';
 
 import '../common';
 import Axios from 'axios';
@@ -29,12 +30,14 @@ import Axios from 'axios';
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 
+const momentDateFormat = 'DD.MM.YYYY';
+
 let profileContainer;
 let currentUser = {
   firstname: '',
   surname: '',
   gender: '',
-  birthdate: '',
+  dob: '',
   bio: '',
   photo: '',
   place: '',
@@ -60,7 +63,7 @@ document.addEventListener('init', function() {
           firstname: userData.first_name,
           surname: userData.last_name,
           gender: userData.gender,
-          birthdate: moment(userData.dob).format('MM/DD/YYYY'),
+          dob: moment(userData.dob, 'YYYY-MM-DD').format(momentDateFormat),
           bio: userData.bio,
           photo: userData.image,
           place: userData.city && userData.city.display_name,
@@ -142,7 +145,7 @@ function initStep4() {
 function drawUserProfile() {
   profileContainer.innerHTML = profileTemplate({
     ...currentUser,
-    age: moment().diff(moment(currentUser.birthdate, 'DD/MM/YYYY'), 'years'),
+    age: moment().diff(moment(currentUser.dob, momentDateFormat), 'years'),
   });
   document.getElementById('js-edit-buddy').addEventListener('click', () => drawBuddyEditProfile());
   document.getElementById('js-edit-primary').addEventListener('click', drawUserEditProfile);
@@ -168,6 +171,40 @@ function drawUserEditProfile() {
     ...currentUser,
     isFemale: currentUser.gender !== 'male',
   });
+
+  const currentYear = moment().get('year');
+  IMask(document.querySelector('[name=dob]'), {
+    mask: Date,
+    pattern: momentDateFormat,
+    min: new Date(currentYear - 100, 0, 1),
+    max: new Date(currentYear - 17, 0, 1),
+
+    format: function(date) {
+      return moment(date).format(momentDateFormat);
+    },
+    parse: function(str) {
+      return moment(str, momentDateFormat);
+    },
+
+    blocks: {
+      YYYY: {
+        mask: IMask.MaskedRange,
+        from: 1970,
+        to: 2030,
+      },
+      MM: {
+        mask: IMask.MaskedRange,
+        from: 1,
+        to: 12,
+      },
+      DD: {
+        mask: IMask.MaskedRange,
+        from: 1,
+        to: 31,
+      },
+    },
+  });
+
   document.getElementById('js-profile-edit-form').addEventListener('submit', handleEditProfile);
   [...document.getElementsByClassName('js-profile-edit-cancel')].forEach(item =>
     item.addEventListener('click', drawUserProfile)
@@ -288,11 +325,9 @@ function handleCreatingProfile(e, hasProfile) {
   const formData = new FormData(target);
   const data = formDataToObj(formData);
 
-  const dobRegex = /^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/;
   const currentYear = moment().get('year');
   if (
-    dobRegex.test(data['birthdate']) &&
-    moment(data['birthdate'], 'MM/DD/YYYY').isBetween(
+    moment(data['dob'], momentDateFormat).isBetween(
       moment()
         .set('year', currentYear - 120)
         .format(),
@@ -301,9 +336,9 @@ function handleCreatingProfile(e, hasProfile) {
         .format()
     )
   ) {
-    target.querySelector('[name=birthdate]').classList.remove('is-invalid');
+    target.querySelector('[name=dob]').classList.remove('is-invalid');
   } else {
-    target.querySelector('[name=birthdate]').classList.add('is-invalid');
+    target.querySelector('[name=dob]').classList.add('is-invalid');
     return;
   }
 
@@ -317,7 +352,7 @@ function handleCreatingProfile(e, hasProfile) {
       first_name: data['firstname'],
       last_name: data['surname'],
       gender: data['gender'],
-      dob: moment(data['birthdate'], 'MM/DD/YYYY').format('YYYY-MM-DD'),
+      dob: moment(data['dob'], momentDateFormat).format('YYYY-MM-DD'),
       bio: data['bio'],
     },
   })
@@ -342,11 +377,9 @@ function handleEditProfile(e) {
   const formData = new FormData(this);
   const data = formDataToObj(formData);
 
-  const dobRegex = /^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/;
   const currentYear = moment().get('year');
   if (
-    dobRegex.test(data['birthdate']) &&
-    moment(data['birthdate'], 'DD/MM/YYYY').isBetween(
+    moment(data['dob'], momentDateFormat).isBetween(
       moment()
         .set('year', currentYear - 120)
         .format(),
@@ -355,9 +388,9 @@ function handleEditProfile(e) {
         .format()
     )
   ) {
-    this.querySelector('[name=birthdate]').classList.remove('is-invalid');
+    this.querySelector('[name=dob]').classList.remove('is-invalid');
   } else {
-    this.querySelector('[name=birthdate]').classList.add('is-invalid');
+    this.querySelector('[name=dob]').classList.add('is-invalid');
     return;
   }
 
@@ -368,7 +401,7 @@ function handleEditProfile(e) {
     first_name: data['firstname'],
     last_name: data['surname'],
     gender: data['gender'],
-    dob: moment(data['birthdate'], 'MM/DD/YYYY').format('YYYY-MM-DD'),
+    dob: moment(data['dob'], momentDateFormat).format('YYYY-MM-DD'),
     bio: data['bio'],
   })
     .then(() => {
