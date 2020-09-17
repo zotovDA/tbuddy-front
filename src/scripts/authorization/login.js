@@ -29,7 +29,7 @@ function obtainToken(email, password) {
       });
     })
     .then(() => {
-      window.location = '/';
+      window.location = '/?authed';
     });
 }
 

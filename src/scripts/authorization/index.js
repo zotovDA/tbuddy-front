@@ -35,7 +35,7 @@ function handleOAuth() {
         name: userData.name,
         id: userData.id,
       });
-      window.location.replace('/');
+      window.location.replace('/?authed');
     })
     .catch(error => drawAuthHandlerError(parseApiErrors(error.response.data)));
 }
