@@ -1,3 +1,4 @@
+import Tooltip from 'bootstrap/js/src/tooltip';
 import { getCurrentUserId } from '../auth';
 import {
   formDataToObj,
@@ -164,6 +165,14 @@ function drawUserProfile() {
       reader.readAsDataURL(this.files[0]);
     }
   });
+  const buddyBadgeNode = document.querySelector('[data-toggle="tooltip"]');
+  if (buddyBadgeNode) {
+    new Tooltip(buddyBadgeNode);
+  }
+  // TODO: define common isNotConfirmedBuddy()
+  if (!currentUser.isBuddy && currentUser.place) {
+    document.getElementById('profile-moderation').classList.remove('d-none');
+  }
 }
 
 function drawUserEditProfile() {

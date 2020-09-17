@@ -1,7 +1,10 @@
+<div id="profile-moderation" class="d-none alert alert-info" role="alert">
+  You are on a half way to become buddy! Your profile will be moderated to confirm buddy status.
+</div>
 <div class="row">
   <div class="col-12 col-md-4 col-lg-3">
-    <img style="min-height: 200px; max-height: 300px;" class="img-cover rounded profile-image js-profile-image" src='{{ photo }}'
-      alt='profile photo' />
+    <img style="min-height: 200px; max-height: 300px;" class="img-cover rounded profile-image js-profile-image"
+      src='{{ photo }}' alt='profile photo' />
 
     <ul class="list-group my-3">
       <a href="javascript:void()" id="js-edit-primary" class="list-group-item list-group-item-action">Edit main info</a>
@@ -16,7 +19,14 @@
     </ul>
   </div>
   <div class="col-12 col-md-8 col-lg-6">
-    <h1>{{ firstname }} {{ surname }} <small class="text-muted">{{ age }} years</small></h1>
+    <h1>
+      {{#if isBuddy}}
+      <object data-toggle="tooltip" data-placement="top" title="Confirmed buddy" class="d-inline-block align-top "
+        width="30" type="image/svg+xml" data="./../../images/logo.svg">
+        <img src="./../../images/logo.svg" alt="buddy badge">
+      </object>
+      {{/if}}
+      {{ firstname }} {{ surname }} <small class="text-muted">{{ age }} years</small></h1>
     {{#if place}}
     <h4>From {{ place }}</h4>
     {{/if}}
