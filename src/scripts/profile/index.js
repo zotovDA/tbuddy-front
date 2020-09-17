@@ -311,8 +311,8 @@ function handleEditBuddyProfile(e, inRegister) {
       if (inRegister) {
         initStep4();
       } else {
-        document.getElementById('form-message').innerHTML = profileSuccessEditTemplate();
-        submitButtonTemplate.restore();
+        drawUserProfile();
+        document.getElementById('profile-edit-success').classList.remove('d-none');
       }
     })
     .catch(error => {
