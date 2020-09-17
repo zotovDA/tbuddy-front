@@ -415,8 +415,8 @@ function handleEditProfile(e) {
   })
     .then(() => {
       currentUser = { ...currentUser, ...data };
-      document.getElementById('form-message').innerHTML = profileSuccessEditTemplate();
-      submitButtonTemplate.restore();
+      drawUserProfile();
+      document.getElementById('profile-edit-success').classList.remove('d-none');
     })
     .catch(error => {
       initApiErrorHandling(e.target, error.response.data);
