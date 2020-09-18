@@ -6,16 +6,25 @@ const development = {
   plugins: [
     // !!! Не забыть добавить новые страницы в production
     new HtmlWebpackPlugin({
-      template: 'index.hbs',
+      filename: 'index.html',
+      template: 'pages/index.hbs',
       chunks: ['landing'],
       templateParameters: {
         title: 'Travel Buddy'
       }
     }),
     new HtmlWebpackPlugin({
+      filename: 'about.html',
+      template: 'pages/static/about.hbs',
+      chunks: ['common'],
+      templateParameters: {
+        title: 'T-Buddy | About'
+      }
+    }),
+    new HtmlWebpackPlugin({
       filename: 'auth.html',
       chunks: ['auth'],
-      template: 'authHandler.hbs',
+      template: 'pages/authHandler.hbs',
       templateParameters: {
         title: 'T-Buddy | Authentification'
       }
@@ -23,7 +32,7 @@ const development = {
     new HtmlWebpackPlugin({
       filename: 'login.html',
       chunks: ['login'],
-      template: 'login.hbs',
+      template: 'pages/login.hbs',
       templateParameters: {
         title: 'T-Buddy | Authentification'
       }
@@ -31,7 +40,7 @@ const development = {
     new HtmlWebpackPlugin({
       filename: 'reset.html',
       chunks: ['reset'],
-      template: 'reset.hbs',
+      template: 'pages/reset.hbs',
       templateParameters: {
         title: 'T-Buddy | Restore access'
       }
@@ -39,7 +48,7 @@ const development = {
     new HtmlWebpackPlugin({
       filename: 'resetConfirm.html',
       chunks: ['resetConfirm'],
-      template: 'resetConfirm.hbs',
+      template: 'pages/resetConfirm.hbs',
       templateParameters: {
         title: 'T-Buddy | Restore access'
       }
@@ -47,7 +56,7 @@ const development = {
     new HtmlWebpackPlugin({
       filename: 'profile.html',
       chunks: ['profile'],
-      template: 'profile.hbs',
+      template: 'pages/profile.hbs',
       templateParameters: {
         title: 'T-Buddy | Profile'
       }
@@ -55,7 +64,7 @@ const development = {
     new HtmlWebpackPlugin({
       filename: 'profile/requests.html',
       chunks: ['profile'],
-      template: 'requests.hbs',
+      template: 'pages/requests.hbs',
       templateParameters: {
         title: 'T-Buddy | Requests'
       }

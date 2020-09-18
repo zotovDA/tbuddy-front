@@ -81,7 +81,10 @@ module.exports = {
         test: /\.(hbs|handlebars)$/,
         use: [{
           loader: "handlebars-loader",
-          options: { inlineRequires: "/images/" }
+          options: {
+            inlineRequires: "/images/",
+            rootRelative: paths.src + '/templates/'
+          }
         }],
       },
     ],
