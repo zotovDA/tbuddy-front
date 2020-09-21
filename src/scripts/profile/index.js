@@ -27,6 +27,7 @@ import IMask from 'imask';
 
 import '../common';
 import Axios from 'axios';
+import { requestsCategories } from '../constants';
 
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
@@ -223,12 +224,10 @@ function drawUserEditProfile() {
 function drawBuddyEditProfile(needCreate) {
   profileContainer.innerHTML = editBuddyTemplate({
     ...currentUser,
-    profileSkills: ['misc', 'culture', 'club', 'food', 'sport', 'tourism', 'hotel', 'shopping'].map(
-      skill => ({
-        label: skill,
-        checked: currentUser.skills.some(item => skill === item),
-      })
-    ),
+    profileSkills: requestsCategories.map(skill => ({
+      label: skill,
+      checked: currentUser.skills.some(item => skill === item),
+    })),
     needCreate: needCreate,
   });
   document

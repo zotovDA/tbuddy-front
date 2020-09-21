@@ -8,7 +8,7 @@ const development = {
     new HtmlWebpackPlugin({
       filename: 'index.html',
       template: 'pages/index.hbs',
-      chunks: ['landing'],
+      chunks: ['home'],
       templateParameters: {
         title: 'Travel Buddy'
       }
@@ -16,7 +16,7 @@ const development = {
     new HtmlWebpackPlugin({
       filename: 'about.html',
       template: 'pages/static/about.hbs',
-      chunks: ['common'],
+      chunks: ['landing'],
       templateParameters: {
         title: 'T-Buddy | About'
       }
@@ -59,14 +59,6 @@ const development = {
       template: 'pages/profile.hbs',
       templateParameters: {
         title: 'T-Buddy | Profile'
-      }
-    }),
-    new HtmlWebpackPlugin({
-      filename: 'profile/requests.html',
-      chunks: ['profile'],
-      template: 'pages/requests.hbs',
-      templateParameters: {
-        title: 'T-Buddy | Requests'
       }
     }),
   ],

@@ -6,237 +6,77 @@
   <main>
     {{> header/header}}
 
-    <div class="welcome">
-      <div class="welcome-content">
-        <div class="welcome-content-group py-4">
-          <h1>TRAVEL BUDDY</h1>
-          <h5>A service of personal travel buddy from the city of arrival,
-            <br /> who can solve any of your tasks.</h5>
-          <button data-target="landing-start" class="btn btn-primary mt-4 js-scroll-to">Learn more</button>
-        </div>
-      </div>
-      <div class="welcome-overlay"></div>
+    <div id="email-verify" class="alert alert-info d-none" role="alert">
+      You need to verify your email to start using the service
     </div>
-    <section id="landing-start">
-      <div class="container">
-        <div class="text-center mb-5">
-          <h2 class="mb-4">We understand your needs</h2>
-          <h4 class="text-muted">While traveling, we are faced with a bunch of tasks
-            <br> that take up not only time but also resources.</h4>
-          <div class="h2 mt-4">What can I do with this?</div>
-          <div class="row">
-            <div class="col-lg-7 mx-auto mt-5">
-              <img src="../images/landing/problem.svg" alt="" class="img-fluid">
-            </div>
+    <div id="profile-create" class="alert alert-info d-none" role="alert">
+      You need to finish registration to start using the service
+      <br> <a href="/profile.html?fromRegister">Finish Registration</a>
+    </div>
+
+    <div class="banner bg-dark">
+      <div class="banner__inner text-white">
+        <div class="mb-5">
+          <h3 class="text-center">
+            While traveling you can't waste your time
+          </h3>
+          <h5 class="text-center">
+            Assign your tasks to buddies
+            <br> who lives at the place of stay
+          </h5>
+          <div class="text-center">
+            <a class="text-white-50" href="/about.html"><u>How it works?</u></a>
           </div>
-        </div>
-      </div>
-    </section>
-    <section class="bg-primary text-white">
-      <div class="container">
-        <div class="text-center">
-          <h2>Assign all tasks to buddies
-            <br> who lives at the place of stay</h2>
-        </div>
-      </div>
-    </section>
-    <section>
-      <div class="container">
-        <div class="text-center mb-5">
-          <h2>Get started with Travel Buddy</h2>
-          <h4 class="font-italic text-muted">3 easy steps, just give it a try!</h4>
+          <div id="to-user-requests" class="text-center d-none">
+            <button data-target="user-requests" class="btn btn-secondary mt-4 js-scroll-to">To your requests</button>
+          </div>
         </div>
 
-        <ul class="timeline">
-          <li>
-            <div class="timeline-image"><img class="rounded-circle img-fluid"
-                src="https://cdn.pixabay.com/photo/2015/07/28/22/04/female-865110_1280.jpg" alt=""></div>
-            <div class="timeline-panel">
-              <div class="timeline-heading">
-                <h4>Leave your request</h4>
-              </div>
-              <div class="timeline-body">
-                <p class="text-muted">Specify the location and date, describe the task and write how much you are
-                  willing to pay.
-                  <br> Don't forget to be polite with others.</p>
-              </div>
-            </div>
-          </li>
-          <li class="timeline-inverted">
-            <div class="timeline-image"><img class="rounded-circle img-fluid"
-                src="https://cdn.pixabay.com/photo/2016/11/08/05/10/students-1807505_1280.jpg" alt=""></div>
-            <div class="timeline-panel">
-              <div class="timeline-heading">
-                <h4>Choose your buddy</h4>
-              </div>
-              <div class="timeline-body">
-                <p class="text-muted">Choose buddy that you like, or receive an incoming requests from others
-                  that wants to help you with your request.</p>
-              </div>
-            </div>
-          </li>
-          <li>
-            <div class="timeline-image"><img class="rounded-circle img-fluid"
-                src="https://cdn.pixabay.com/photo/2015/08/05/01/12/phone-875488_1280.jpg" alt=""></div>
-            <div class="timeline-panel">
-              <div class="timeline-heading">
-                <h4>Talk with buddy</h4>
-              </div>
-              <div class="timeline-body">
-                <p class="text-muted">Discuss all request details with your buddy and decide if you would agree.
-                  Make sure you both understand conditions.</p>
-              </div>
-            </div>
-          </li>
-          <li class="timeline-inverted">
-            <div class="timeline-image bg-primary">
-              <h2 class="pt-5">
-                Enjoy!
-              </h2>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </section>
-    <section class="showcase py-0">
-      <div class="container-fluid p-0">
-        <div class="row no-gutters">
+        <div id="banner-container">
 
-          <div class="col-lg-6 order-lg-2 text-white showcase-img"
-            style="background-image: url('https://cdn.pixabay.com/photo/2016/11/16/03/37/globe-trotter-1828079_1280.jpg');">
-          </div>
-          <div class="col-lg-6 order-lg-1 my-auto showcase-text">
-            <h2>What if I am traveller?</h2>
-            <p class="lead mb-0">You need to go through a simple registration and choose your travell buddy. Buddy are
-              always in the city of your stay.</p>
-          </div>
         </div>
-        <div class="row no-gutters">
-          <div class="col-lg-6 text-white showcase-img"
-            style="background-position-y: center; background-image: url('https://images.unsplash.com/photo-1542380536-3eb944a532d8?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=934&q=80');">
-          </div>
-          <div class="col-lg-6 my-auto showcase-text">
-            <h2>Can I become buddy?</h2>
-            <p class="lead mb-0">Yes, you can make traveller's trip more comfortable and fullfilled! Start making money
-              on the knowledge of the location of your reside.</p>
-          </div>
-        </div>
+
+
       </div>
+    </div>
+
+    <section id="user-requests" class="d-none">
+      <div class="container">
+        <h1>Your requests</h1>
+        <div id="user-requests-list-container"></div>
       </div>
     </section>
-    <section id="landing-subscribe" class="bg-light">
+
+    <section id="buddy-requests" class="bg-light d-none">
       <div class="container">
-        <div class="text-center mb-5">
-          <h2>Get started today</h2>
-          <h4 class="text-muted">Leave your email to get notified about the launch!</h4>
-        </div>
-        <div class="row">
-          <div class="col-lg-6 mx-auto js-subscription-wrapper">
-            <form novalidate method="POST" action="subscribeHandle.php"
-              class="js-subscription-form subscription-form mt-5">
-              <div class="form-group">
-                <input required type="email" name="email" placeholder="name@company.com" class="form-control">
-                <div class="invalid-feedback">
-                  Please provide a valid email.
-                </div>
-                <div class="js-subscription-button">
-                  <button type="submit" class="btn btn-primary">Get Started</button>
-                </div>
-              </div>
-              <div class="form-text">You will only get one letter on an official launch day of the service and after
-                that your email address will be removed. We'll never share your email with anyone else.</div>
-            </form>
-          </div>
-        </div>
+        <h1>Someone you can help</h1>
+        <div class="text-muted">You see this, because you registered as buddy in <span id="buddy-city"></span></div>
+        <div id="buddy-requests-list-container"></div>
       </div>
     </section>
   </main>
 
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   {{> footer}}
-  <script>
-    /**
-    * Parallax scroll effect
-    * Created by Sallar Kaboli <sallar.kaboli@gmail.com>
-    */
-    var $content = document.querySelector('.welcome .welcome-content')
-      , $blur = document.querySelector('.welcome .welcome-overlay')
-      , wHeight = window.innerHeight;
-
-    window.addEventListener('resize', function () {
-      wHeight = window.innerHeight;
-    });
-
-    /**
-     * requestAnimationFrame Shim 
-     */
-    window.requestAnimFrame = (function () {
-      return window.requestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        function (callback) {
-          window.setTimeout(callback, 1000 / 60);
-        };
-    })();
-
-    /**
-     * Scroller
-     */
-    function Scroller() {
-      this.latestKnownScrollY = 0;
-      this.ticking = false;
-    }
-
-    Scroller.prototype = {
-      /**
-       * Initialize
-       */
-      init: function () {
-        window.addEventListener('scroll', this.onScroll.bind(this), false);
-      },
-
-      /**
-       * Capture Scroll
-       */
-      onScroll: function () {
-        this.latestKnownScrollY = window.scrollY;
-        this.requestTick();
-      },
-
-      /**
-       * Request a Tick
-       */
-      requestTick: function () {
-        if (!this.ticking) {
-          window.requestAnimFrame(this.update.bind(this));
-        }
-        this.ticking = true;
-      },
-
-      /**
-       * Update.
-       */
-      update: function () {
-        var currentScrollY = this.latestKnownScrollY;
-        this.ticking = false;
-
-        /**
-         * Do The Dirty Work Here
-         */
-        var slowScroll = currentScrollY / 4,
-          blurScroll = currentScrollY * 2;
-
-        $content.style.transform = 'translateY(-' + slowScroll + 'px)';
-
-        $blur.style.opacity = blurScroll / wHeight;
-      }
-    };
-
-    /**
-     * Attach!
-     */
-    var scroller = new Scroller();
-    scroller.init();
-  </script>
 </body>
 
 </html>

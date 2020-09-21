@@ -6,11 +6,15 @@ module.exports = {
   context: paths.src,
   entry: {
     landing: './scripts/landing/index.js',
+
     auth: './scripts/authorization/index.js',
     login: './scripts/authorization/login.js',
     reset: './scripts/authorization/reset.js',
     resetConfirm: './scripts/authorization/resetConfirm.js',
+
+    home: './scripts/requests/index.js',
     profile: './scripts/profile/index.js',
+
     common: './scripts/common.js'
   },
   output: {

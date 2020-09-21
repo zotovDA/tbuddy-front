@@ -1,0 +1,19 @@
+<div>
+  <div id="user-requests-list" class="row">
+    {{#each requests }}
+    <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
+      {{> requests/requestItem 
+        id=id
+        name=name
+        price=price
+        skills=skills
+        desctiption=desctiption 
+        dateFrom=dateFrom
+        dateTo=dateTo
+      }}
+    </div>
+    {{/each}}
+  </div>
+
+  {{!-- TODO: closed requests --}}
+</div>

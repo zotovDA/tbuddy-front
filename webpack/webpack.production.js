@@ -18,7 +18,7 @@ const minifyOptions = {
 const production = {
   plugins: [
     new HtmlWebpackPlugin({
-      chunks: ['landing'],
+      chunks: ['home'],
       filename: 'index.html',
       template: 'pages/index.hbs',
       templateParameters: {
@@ -28,7 +28,7 @@ const production = {
     }),
     new HtmlWebpackPlugin({
       filename: 'about.html',
-      chunks: ['common'],
+      chunks: ['landing'],
       template: 'pages/static/about.hbs',
       templateParameters: {
         title: 'T-Buddy | About'
@@ -77,15 +77,6 @@ const production = {
       template: 'pages/profile.hbs',
       templateParameters: {
         title: 'T-Buddy | Profile'
-      },
-      minify: minifyOptions,
-    }),
-    new HtmlWebpackPlugin({
-      chunks: ['profile'],
-      filename: 'profile/requests.html',
-      template: 'pages/requests.hbs',
-      templateParameters: {
-        title: 'T-Buddy | Requests'
       },
       minify: minifyOptions,
     }),

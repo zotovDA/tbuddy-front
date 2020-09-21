@@ -1,0 +1,32 @@
+<div data-id="{{ id }}" class="request-item js-request-item card">
+  <div class="card-header bg-primary bg-gradient text-white">{{ name }} needs help
+    {{#if isOpen}}
+      <span class="ml-2 badge bg-secondary">open</span>
+    {{/if}}
+    {{#if isProgress}}
+      <span class="ml-2 badge bg-warning text-dark">in progress</span>
+    {{/if}}
+    {{#if isClosed}}
+      <span class="ml-2 badge bg-dark">closed</span>
+    {{/if}}
+  </div>
+  <div class="card-body __container">
+    <div class="__details">
+      <h6>{{ location }}</h6>
+      <div class="__categories">
+        {{#each skills }}
+        <span class="badge bg-primary">{{ this }}</span>
+        {{/each}}
+      </div>
+      <div class="__price text-success">$ {{ price }}</div>
+      <p class="card-text">{{ description }}</p>
+    </div>
+
+    <div class="mt-auto __footer">
+      <hr>
+      <p class="card-text small text-muted __dates">
+        {{ dateFrom }} – {{ dateTo }}
+      </p>
+    </div>
+  </div>
+</div>
