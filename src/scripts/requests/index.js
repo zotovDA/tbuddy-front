@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function() {
     drawUserRequests(userRequests);
   }
   if (isBuddy) {
-    // TODO: draw requests for buddy
+    drawBuddyRequests(userRequests, 'Moscow, Russia');
   }
 });
 
@@ -148,14 +148,17 @@ function drawUserRequests(requests) {
   });
 }
 
-// function _hideUserRequests() {
-//   document.getElementById('to-user-requests').classList.add('d-none');
-//   document.getElementById('user-requests').classList.add('d-none');
-// }
-
-// function drawBuddyRequests(requests, buddyLocation) {
-//   // TODO: fill #buddy-city with buddyLocation
-// }
+function drawBuddyRequests(requests, buddyLocation) {
+  document.getElementById('buddy-city').innerHTML = buddyLocation;
+  document.getElementById('buddy-requests').classList.remove('d-none');
+  document.getElementById('buddy-requests-list-container').innerHTML = requestsList({
+    // TODO: forBuddy if not apply
+    requests: requests.map(request => ({ ...request, forBuddy: true, isApplied: false })),
+  });
+  [...document.querySelectorAll('#buddy-requests .request-item button')].forEach(btn =>
+    btn.addEventListener('click', handleApplyForRequest)
+  );
+}
 
 function handleCreateRequest(e) {
   e.preventDefault();
@@ -195,4 +198,12 @@ function handleCreateRequest(e) {
   requestsList.prepend(requestItemNode);
 
   document.getElementById('request-create-more').addEventListener('click', drawCreateRequest);
+}
+
+function handleApplyForRequest() {
+  const targetId = this.dataset['request'];
+  this.classList.add('d-none');
+  document
+    .querySelector(`#buddy-requests .request-item[data-id='${targetId}'] .badge.d-none`)
+    .classList.remove('d-none');
 }

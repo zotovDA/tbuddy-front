@@ -1,14 +1,16 @@
 <div data-id="{{ id }}" class="request-item js-request-item card">
-  <div class="card-header bg-primary bg-gradient text-white">{{ name }} needs help
+  <div class="card-header {{#if isApplied}}bg-secondary{{else}}bg-primary{{/if}} bg-gradient text-white">{{ name }}
+    needs help
     {{#if isOpen}}
-      <span class="ml-2 badge bg-secondary">open</span>
+    <span class="ml-2 badge bg-secondary">open</span>
     {{/if}}
     {{#if isProgress}}
-      <span class="ml-2 badge bg-warning text-dark">in progress</span>
+    <span class="ml-2 badge bg-warning text-dark">in progress</span>
     {{/if}}
     {{#if isClosed}}
-      <span class="ml-2 badge bg-dark">closed</span>
+    <span class="ml-2 badge bg-dark">closed</span>
     {{/if}}
+    <span class="badge bg-success {{#unless isApplied}}d-none{{/unless}}">applied</span>
   </div>
   <div class="card-body __container">
     <div class="__details">
@@ -27,6 +29,12 @@
       <p class="card-text small text-muted __dates">
         {{ dateFrom }} – {{ dateTo }}
       </p>
+
+      {{#if forBuddy}}
+      <div class="text-center">
+        <button data-request="{{ id }}" data-toggle="modal" data-target="#applySuccess" class="btn btn-secondary">Apply</button>
+      </div>
+      {{/if}}
     </div>
   </div>
 </div>
