@@ -15,6 +15,7 @@ import createRequest from '../../templates/requests/create.hbs';
 import createRequestSuccess from '../../templates/requests/_createSuccess.hbs';
 import requestsList from '../../templates/requests/requestsList.hbs';
 import requestItem from '../../templates/requests/requestItem.hbs';
+import requestBuddy from '../../templates/requests/_requestBuddy.hbs';
 
 let lastLocation;
 let lastDateFrom;
@@ -46,11 +47,12 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
+  // MOCK user requests
   const userRequests = [
     {
       id: 1,
-      isOpen: false,
-      isProgress: true,
+      isOpen: true,
+      isProgress: false,
       isClosed: false,
       name: 'Evgeny',
       price: '1000',
@@ -59,6 +61,79 @@ document.addEventListener('DOMContentLoaded', function() {
       location: 'Ekaterinburg, Russia',
       dateFrom: moment('2020-11-01', 'YYYY-MM-DD').format('DD.MM.YYYY'),
       dateTo: moment('2020-11-11', 'YYYY-MM-DD').format('DD.MM.YYYY'),
+      buddy: undefined,
+      buddyCandiadates: [
+        {
+          requestId: 1,
+          name: 'Tom',
+          skills: ['travel', 'sport'],
+          photo:
+            'https://images.unsplash.com/photo-1496360166961-10a51d5f367a?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
+          bio: 'I am the only one you are looking to',
+          contacts: 'Text me on telegram: https://t.me/buddy-tom',
+        },
+        {
+          requestId: 1,
+          name: 'Jane',
+          photo:
+            'https://images.unsplash.com/photo-1475551916865-b288ba757973?ixlib=rb-1.2.1&auto=format&fit=crop&w=900&q=60',
+          bio: 'I am just a local girl that can help you for some price',
+          contacts: 'Text me on telegram: https://t.me/buddy-jane',
+        },
+        {
+          requestId: 1,
+          name: 'Alice',
+          skills: ['travel', 'photo', 'cars'],
+          photo:
+            'https://images.unsplash.com/photo-1484329148740-e09e6c78c1e0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
+          bio: 'I whant to take tasks for you. Plase approve me :)',
+          contacts: 'Text me on telegram: https://t.me/buddy-alice',
+        },
+      ],
+      buddiesCount: 3,
+    },
+    {
+      id: 2,
+      isOpen: false,
+      isProgress: true,
+      isClosed: false,
+      name: 'Evgeny',
+      price: '150',
+      description: 'some text that need to be done',
+      skills: ['music'],
+      location: 'Ekaterinburg, Russia',
+      dateFrom: moment('2020-11-01', 'YYYY-MM-DD').format('DD.MM.YYYY'),
+      dateTo: moment('2020-11-11', 'YYYY-MM-DD').format('DD.MM.YYYY'),
+      buddy: {
+        name: 'Tim',
+        contacts: 'Find me on telegram: https://t.me/buddy-Tim',
+      },
+      buddyCandiadates: [
+        {
+          name: 'Tom',
+          skills: ['travel', 'sport'],
+          photo:
+            'https://images.unsplash.com/photo-1496360166961-10a51d5f367a?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
+          bio: 'I am the only one you are looking to',
+          contacts: 'Text me on telegram: https://t.me/buddy-tom',
+        },
+        {
+          name: 'Jane',
+          photo:
+            'https://images.unsplash.com/photo-1475551916865-b288ba757973?ixlib=rb-1.2.1&auto=format&fit=crop&w=900&q=60',
+          bio: 'I am just a local girl that can help you for some price',
+          contacts: 'Text me on telegram: https://t.me/buddy-jane',
+        },
+        {
+          name: 'Alice',
+          skills: ['travel', 'photo', 'cars'],
+          photo:
+            'https://images.unsplash.com/photo-1484329148740-e09e6c78c1e0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
+          bio: 'I whant to take tasks for you. Plase approve me :)',
+          contacts: 'Text me on telegram: https://t.me/buddy-alice',
+        },
+      ],
+      buddiesCount: 3,
     },
   ];
 
@@ -146,6 +221,12 @@ function drawUserRequests(requests) {
   document.getElementById('user-requests-list-container').innerHTML = requestsList({
     requests: requests,
   });
+  [...document.querySelectorAll('#user-requests .js-solve-button')].forEach(btn =>
+    btn.addEventListener('click', handleSolveForRequest)
+  );
+  [...document.querySelectorAll('#user-requests .js-choose-buddy')].forEach(btn =>
+    btn.addEventListener('click', handleChooseBuddyForRequest)
+  );
 }
 
 function drawBuddyRequests(requests, buddyLocation) {
@@ -155,7 +236,7 @@ function drawBuddyRequests(requests, buddyLocation) {
     // TODO: forBuddy if not apply
     requests: requests.map(request => ({ ...request, forBuddy: true, isApplied: false })),
   });
-  [...document.querySelectorAll('#buddy-requests .request-item button')].forEach(btn =>
+  [...document.querySelectorAll('#buddy-requests .request-item .js-apply-button')].forEach(btn =>
     btn.addEventListener('click', handleApplyForRequest)
   );
 }
@@ -205,5 +286,51 @@ function handleApplyForRequest() {
   this.classList.add('d-none');
   document
     .querySelector(`#buddy-requests .request-item[data-id='${targetId}'] .badge.d-none`)
+    .classList.remove('d-none');
+}
+
+function handleSolveForRequest() {
+  const targetId = this.dataset['request'];
+  // remove solve btn
+  this.classList.add('d-none');
+
+  // change header bg
+  const requestHeader = document.querySelector(
+    `#user-requests .request-item[data-id='${targetId}'] .card-header`
+  );
+  requestHeader.classList.remove('bg-primary');
+  requestHeader.classList.add('bg-success');
+
+  // remove status badges
+  document
+    .querySelector(`#user-requests .request-item[data-id='${targetId}'] .js-progress-badge`)
+    .classList.add('d-none');
+}
+
+function handleChooseBuddyForRequest() {
+  const targetId = this.dataset['request'];
+  const name = this.dataset['name'];
+  const contacts = this.dataset['contacts'];
+
+  document.querySelector(
+    `#user-requests .request-item[data-id='${targetId}'] .card-footer`
+  ).innerHTML = requestBuddy({
+    id: targetId,
+    name: name,
+    contacts: contacts,
+    isDone: false,
+  });
+  [
+    ...document.querySelectorAll(
+      `#user-requests .request-item[data-id='${targetId}'] .js-solve-button`
+    ),
+  ].forEach(btn => btn.addEventListener('click', handleSolveForRequest));
+
+  // add progress badge
+  document
+    .querySelector(`#user-requests .request-item[data-id='${targetId}'] .js-open-badge`)
+    .classList.add('d-none');
+  document
+    .querySelector(`#user-requests .request-item[data-id='${targetId}'] .js-progress-badge`)
     .classList.remove('d-none');
 }

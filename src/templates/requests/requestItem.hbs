@@ -1,16 +1,10 @@
 <div data-id="{{ id }}" class="request-item js-request-item card">
-  <div class="card-header {{#if isApplied}}bg-secondary{{else}}bg-primary{{/if}} bg-gradient text-white">{{ name }}
+  <div class="card-header {{#if isDone}}bg-success{{else}}bg-primary{{/if}} bg-gradient text-white">{{ name }}
     needs help
-    {{#if isOpen}}
-    <span class="ml-2 badge bg-secondary">open</span>
-    {{/if}}
-    {{#if isProgress}}
-    <span class="ml-2 badge bg-warning text-dark">in progress</span>
-    {{/if}}
-    {{#if isClosed}}
-    <span class="ml-2 badge bg-dark">closed</span>
-    {{/if}}
-    <span class="badge bg-success {{#unless isApplied}}d-none{{/unless}}">applied</span>
+    <span class="js-open-badge ml-2 badge bg-secondary {{#unless isOpen}}d-none{{/unless}}">open</span>
+    <span class="js-progress-badge ml-2 badge bg-warning text-dark {{#unless isProgress}}d-none{{/unless}}">in
+      progress</span>
+    <span class="js-apply-badge badge bg-success {{#unless isApplied}}d-none{{/unless}}">applied</span>
   </div>
   <div class="card-body __container">
     <div class="__details">
@@ -32,9 +26,66 @@
 
       {{#if forBuddy}}
       <div class="text-center">
-        <button data-request="{{ id }}" data-toggle="modal" data-target="#applySuccess" class="btn btn-secondary">Apply</button>
+        <button data-request="{{ id }}" data-toggle="modal" data-target="#applySuccess"
+          class="js-apply-button btn btn-secondary">Apply</button>
       </div>
       {{/if}}
     </div>
   </div>
+
+  {{#if buddy}}
+  <div class="card-footer">
+    {{> requests/_requestBuddy 
+    id=id
+    name=buddy.name
+    contacts=buddy.contacts
+    isDone=isDone
+  }}
+  </div>
+  {{else}}
+  {{#unless forBuddy}}
+  <div class="card-footer">
+    {{ buddiesCount }} buddies applied
+    {{#if buddiesCount}}
+    <div class="text-center"> <a data-toggle="modal" data-target="#chooseBuddy-{{ id }}" role="button" class="small">
+        choose buddy
+      </a></div>
+
+
+    {{!-- CHOOSE BUDDY MODAL --}}
+    <div class="modal fade" id="chooseBuddy-{{ id }}" tabindex="-1" aria-labelledby="chooseBuddyLabel-{{ id }}"
+      aria-hidden="true">
+      <div class="modal-dialog modal-fullscreen-sm-down">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="chooseBuddyLabel-{{ id }}">Choose who will solve your request</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Below you will see buddies contact info. Discuss request details with whom you like.</p>
+            {{#each buddyCandiadates }}
+            <div class="mb-3">
+              {{> profile/memberCard 
+                name=name
+                photo=photo
+                skills=skills
+                bio=bio 
+                contacts=contacts
+              }}
+              <div class="text-center">
+                <button data-request="{{ requestId }}" data-name="{{ name }}" data-contacts="{{ contacts }}"
+                  class="js-choose-buddy btn btn-primary" data-dismiss="modal">Choose {{ name }}</button>
+              </div>
+            </div>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{/if}}
+  {{/unless}}
+  {{/if}}
 </div>
