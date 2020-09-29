@@ -413,6 +413,10 @@ function handleEditProfile(e) {
     bio: data['bio'],
   })
     .then(() => {
+      localStorage.setItem(
+        'user',
+        JSON.stringify({ id: getCurrentUserId(), name: data['firstname'] })
+      );
       currentUser = { ...currentUser, ...data };
       drawUserProfile();
       document.getElementById('profile-edit-success').classList.remove('d-none');
