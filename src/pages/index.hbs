@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+{{> head title=title}}
+
+<body>
+  <main>
+    {{> header/header}}
+
+    <div id="email-verify" class="alert alert-info d-none" role="alert">
+      You need to verify your email to start using the service
+    </div>
+    <div id="profile-create" class="alert alert-info d-none" role="alert">
+      You need to finish registration to start using the service
+      <br> <a href="/profile.html?fromRegister">Finish Registration</a>
+    </div>
+
+    <div class="banner bg-dark">
+      <div class="banner__inner text-white">
+        <div class="mb-5">
+          <h3 class="text-center">
+            While traveling you can't waste your time
+          </h3>
+          <h5 class="text-center">
+            Assign your tasks to buddies
+            <br> who lives at the place of stay
+          </h5>
+          <div class="text-center">
+            <a class="text-white-50" href="/about.html"><u>How it works?</u></a>
+          </div>
+          <div id="to-user-requests" class="text-center d-none">
+            <button data-target="user-requests" class="btn btn-secondary mt-4 js-scroll-to">To your requests</button>
+          </div>
+        </div>
+
+        <div id="banner-container">
+
+        </div>
+
+
+      </div>
+    </div>
+
+    <section id="user-requests" class="d-none">
+      <div class="container">
+        <h1>Your requests</h1>
+        <div id="user-requests-list-container"></div>
+      </div>
+    </section>
+
+    <section id="buddy-requests" class="bg-light d-none">
+      <div class="container">
+        <h1>Someone you can help</h1>
+        <div class="text-muted mb-3">You see this, because you registered as buddy in <span id="buddy-city"></span>
+        </div>
+        <div id="buddy-requests-list-container"></div>
+      </div>
+    </section>
+  </main>
+
+  {{!-- BUDDY APPLY MODAL --}}
+  <div class="modal fade" id="applySuccess" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="applySuccessLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="applySuccessLabel">You have applied to request!</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          {{!-- TODO: review the rules. rewrite it in steps --}}
+          <h3>Thank you for helping travelers!</h3>
+          <p>Owner of that request will be notified about your response.
+            <br> He will see your contacts data to discuss with you some details and final fee, <b>be prepared</b>!
+            <br> After that traveler must confirm that you is the only person to solve this task.
+            <br> And you are ready to solve the task.
+          </p>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="mx-auto btn btn-primary" data-dismiss="modal">Got It</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{> footer}}
+</body>
+
+</html>

@@ -1,0 +1,45 @@
+@import './vars';
+
+.banner {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+
+  background: url(../images/landing/banner.jpg) center no-repeat;
+  background-size: cover;
+
+  display: flex;
+  justify-content: center;
+
+  &__inner {
+    padding-top: 15vh;
+    padding-bottom: 3em;
+    position: relative;
+    z-index: 1;
+  }
+
+  &::before {
+    content: '';
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-color: $primary;
+    opacity: 0.95;
+  }
+}
+
+@media (max-width: 768px) {
+  .banner {
+    background-position-x: 80%;
+  }
+}
+
+.request-item {
+  height: 100%;
+
+  & .__container {
+    display: flex;
+    flex-direction: column;
+  }
+}

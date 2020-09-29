@@ -117,3 +117,15 @@ export function initApiErrorHandling(form, response, forceError) {
     }
   });
 }
+
+/** @param {string} price */
+export function formatPrice(price) {
+  let resultPrice = price;
+  if (price.indexOf('$') > -1) {
+    resultPrice = price.slice(1);
+  }
+
+  resultPrice = resultPrice.replace(' ', '');
+
+  return resultPrice;
+}

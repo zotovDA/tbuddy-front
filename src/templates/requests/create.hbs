@@ -1,0 +1,63 @@
+<div class="container">
+  <form id="create-request-form" novalidate>
+    <div class="mb-3">
+      <label for="request-city" class="form-label">Location</label>
+      <div class="text-dark">
+        <select name="city" required class="form-select text-dark" id="request-city">
+          <option value="">Start typing the city...</option>
+        </select>
+      </div>
+      <div class="invalid-feedback text-white">Please choose the city</div>
+    </div>
+
+    <div class="mb-3 row">
+      <div class="col">
+        <label for="request-date-from" class="form-label">Date from</label>
+        <input type="text" required value="{{ dateFrom }}" placeholder="dd.mm.yyyy" name="dateFrom" class="form-control"
+          id="request-date-from">
+        <div class="form-text text-white-50">Date when request will be actual</div>
+        <div class="invalid-feedback text-white">Please type correct date</div>
+      </div>
+
+      <div class="col">
+        <label for="request-date-to" class="form-label">Date to</label>
+        <input type="text" required value="{{ dateTo }}" placeholder="dd.mm.yyyy" name="dateTo" class="form-control"
+          id="request-date-to">
+        <div class="form-text text-white-50">Date when request will be no longer actual</div>
+        <div class="invalid-feedback text-white">Please type correct date</div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <div class="form-label">Choose categories</div>
+      {{#each categories }}
+      <div class="form-check form-check-inline">
+        <input name="skills" class="form-check-input" type="checkbox" id="skill-{{ this }}" value="{{ this }}">
+        <label class="form-check-label" for="skill-{{ this }}">{{ this }}</label>
+      </div>
+      {{/each}}
+      <div class="invalid-feedback text-white">Please choose something</div>
+    </div>
+
+    <div class="mb-3">
+      <label for="request-price" class="form-label">Approximate price</label>
+      <input required type="text" name="price" class="form-control" id="request-price">
+      <div class="invalid-feedback text-white">Please type correct price</div>
+    </div>
+
+    <div class="mb-3">
+      <label for="request-description" class="form-label">Describe the need</label>
+      <textarea required placeholder="Tell in few words what should be done to help you" name="description"
+        class="form-control" maxlength="200" id="request-description" rows="3">{{ details }}</textarea>
+      <div class="invalid-feedback text-white">Please describe your need</div>
+    </div>
+    <div class="mb-3 form-feedback invalid-feedback text-white"></div>
+    <div id="form-message" class="mb-3"></div>
+
+    <div class="text-center">
+      <button type="submit" class="btn btn-secondary btn-lg">
+        Publish
+      </button>
+    </div>
+  </form>
+</div>

@@ -18,17 +18,27 @@ const minifyOptions = {
 const production = {
   plugins: [
     new HtmlWebpackPlugin({
-      chunks: ['landing'],
-      template: 'index.hbs',
+      chunks: ['home'],
+      filename: 'index.html',
+      template: 'pages/index.hbs',
       templateParameters: {
         title: 'Travel Buddy'
       },
       minify: minifyOptions,
     }),
     new HtmlWebpackPlugin({
+      filename: 'about.html',
+      chunks: ['landing'],
+      template: 'pages/static/about.hbs',
+      templateParameters: {
+        title: 'T-Buddy | About'
+      },
+      minify: minifyOptions,
+    }),
+    new HtmlWebpackPlugin({
       chunks: ['auth'],
       filename: 'auth.html',
-      template: 'authHandler.hbs',
+      template: 'pages/authHandler.hbs',
       templateParameters: {
         title: 'T-Buddy | Authentification'
       },
@@ -37,7 +47,7 @@ const production = {
     new HtmlWebpackPlugin({
       chunks: ['login'],
       filename: 'login.html',
-      template: 'login.hbs',
+      template: 'pages/login.hbs',
       templateParameters: {
         title: 'T-Buddy | Authentification'
       },
@@ -46,7 +56,7 @@ const production = {
     new HtmlWebpackPlugin({
       chunks: ['reset'],
       filename: 'reset.html',
-      template: 'reset.hbs',
+      template: 'pages/reset.hbs',
       templateParameters: {
         title: 'T-Buddy | Restore access'
       },
@@ -55,7 +65,7 @@ const production = {
     new HtmlWebpackPlugin({
       chunks: ['resetConfirm'],
       filename: 'resetConfirm.html',
-      template: 'resetConfirm.hbs',
+      template: 'pages/resetConfirm.hbs',
       templateParameters: {
         title: 'T-Buddy | Restore access'
       },
@@ -64,18 +74,9 @@ const production = {
     new HtmlWebpackPlugin({
       chunks: ['profile'],
       filename: 'profile.html',
-      template: 'profile.hbs',
+      template: 'pages/profile.hbs',
       templateParameters: {
         title: 'T-Buddy | Profile'
-      },
-      minify: minifyOptions,
-    }),
-    new HtmlWebpackPlugin({
-      chunks: ['profile'],
-      filename: 'profile/requests.html',
-      template: 'requests.hbs',
-      templateParameters: {
-        title: 'T-Buddy | Requests'
       },
       minify: minifyOptions,
     }),
