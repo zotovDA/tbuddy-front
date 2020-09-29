@@ -99,6 +99,11 @@ export function getCurrentUserId() {
   return user ? user.id : null;
 }
 
+export function getCurrentUserName() {
+  const user = getUserFromStore();
+  return user ? user.name : null;
+}
+
 export function clearUserSessionFromStore() {
   localStorage.removeItem('access');
   localStorage.removeItem('refresh');

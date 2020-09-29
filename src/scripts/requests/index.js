@@ -16,6 +16,14 @@ import createRequestSuccess from '../../templates/requests/_createSuccess.hbs';
 import requestsList from '../../templates/requests/requestsList.hbs';
 import requestItem from '../../templates/requests/requestItem.hbs';
 import requestBuddy from '../../templates/requests/_requestBuddy.hbs';
+import { getCurrentUserId } from '../auth';
+import Axios from 'axios';
+import { showPageError } from '../view';
+
+/** @type {{id: number, firstname: string, location:string}} */
+let currentUser = {
+  id: getCurrentUserId(),
+};
 
 let lastLocation;
 let lastDateFrom;
@@ -23,21 +31,36 @@ let lastDateTo;
 /** @type {Element} */
 let bannerContainer;
 
-let currentUser = 'Evgeny';
+let userRequests = [];
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('init', async function() {
   bannerContainer = document.getElementById('banner-container');
 
-  // TODO: fetch user info
-  const isBuddy = true;
-  const isAuth = true;
+  let isBuddy = false;
+  const isAuth = !!currentUser.id;
+  // TODO: fetch verify status
   const isVerified = true;
-  const isProfileCreated = true;
+  let isProfileCreated = false;
 
   if (!isAuth) {
     bannerContainer.innerHTML = unauthorizedTemplate();
     return;
+  } else {
+    await Axios.get(`/profiles/${currentUser.id}/`)
+      .then(response => {
+        const userData = response.data;
+        currentUser.firstname = userData.first_name;
+        currentUser.location = userData.city && userData.city.display_name;
+
+        isBuddy = userData.is_buddy;
+        isProfileCreated = userData.is_manual;
+      })
+      .catch(() => {
+        bannerContainer.innerHTML = unauthorizedTemplate();
+        return;
+      });
   }
+  // FIXME: handle verify error
   if (!isVerified) {
     document.getElementById('email-verify').classList.remove('d-none');
     return;
@@ -47,102 +70,110 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // MOCK user requests
-  const userRequests = [
-    {
-      id: 1,
-      isOpen: true,
-      isProgress: false,
-      isClosed: false,
-      name: 'Evgeny',
-      price: '1000',
-      description: 'some text that need to be done',
-      skills: ['misc', 'travel'],
-      location: 'Ekaterinburg, Russia',
-      dateFrom: moment('2020-11-01', 'YYYY-MM-DD').format('DD.MM.YYYY'),
-      dateTo: moment('2020-11-11', 'YYYY-MM-DD').format('DD.MM.YYYY'),
-      buddy: undefined,
-      buddyCandiadates: [
-        {
-          requestId: 1,
-          name: 'Tom',
-          skills: ['travel', 'sport'],
-          photo:
-            'https://images.unsplash.com/photo-1496360166961-10a51d5f367a?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
-          bio: 'I am the only one you are looking to',
-          contacts: 'Text me on telegram: https://t.me/buddy-tom',
-        },
-        {
-          requestId: 1,
-          name: 'Jane',
-          photo:
-            'https://images.unsplash.com/photo-1475551916865-b288ba757973?ixlib=rb-1.2.1&auto=format&fit=crop&w=900&q=60',
-          bio: 'I am just a local girl that can help you for some price',
-          contacts: 'Text me on telegram: https://t.me/buddy-jane',
-        },
-        {
-          requestId: 1,
-          name: 'Alice',
-          skills: ['travel', 'photo', 'cars'],
-          photo:
-            'https://images.unsplash.com/photo-1484329148740-e09e6c78c1e0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
-          bio: 'I whant to take tasks for you. Plase approve me :)',
-          contacts: 'Text me on telegram: https://t.me/buddy-alice',
-        },
-      ],
-      buddiesCount: 3,
-    },
-    {
-      id: 2,
-      isOpen: false,
-      isProgress: true,
-      isClosed: false,
-      name: 'Evgeny',
-      price: '150',
-      description: 'some text that need to be done',
-      skills: ['music'],
-      location: 'Ekaterinburg, Russia',
-      dateFrom: moment('2020-11-01', 'YYYY-MM-DD').format('DD.MM.YYYY'),
-      dateTo: moment('2020-11-11', 'YYYY-MM-DD').format('DD.MM.YYYY'),
-      buddy: {
-        name: 'Tim',
-        contacts: 'Find me on telegram: https://t.me/buddy-Tim',
-      },
-      buddyCandiadates: [
-        {
-          name: 'Tom',
-          skills: ['travel', 'sport'],
-          photo:
-            'https://images.unsplash.com/photo-1496360166961-10a51d5f367a?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
-          bio: 'I am the only one you are looking to',
-          contacts: 'Text me on telegram: https://t.me/buddy-tom',
-        },
-        {
-          name: 'Jane',
-          photo:
-            'https://images.unsplash.com/photo-1475551916865-b288ba757973?ixlib=rb-1.2.1&auto=format&fit=crop&w=900&q=60',
-          bio: 'I am just a local girl that can help you for some price',
-          contacts: 'Text me on telegram: https://t.me/buddy-jane',
-        },
-        {
-          name: 'Alice',
-          skills: ['travel', 'photo', 'cars'],
-          photo:
-            'https://images.unsplash.com/photo-1484329148740-e09e6c78c1e0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
-          bio: 'I whant to take tasks for you. Plase approve me :)',
-          contacts: 'Text me on telegram: https://t.me/buddy-alice',
-        },
-      ],
-      buddiesCount: 3,
-    },
-  ];
-
   drawCreateRequest();
-  if (userRequests.length) {
-    drawUserRequests(userRequests);
-  }
+  // TODO: fetch user requests
+  Axios.get(`/claims/`, { params: { limit: 100 } })
+    .then(response => {
+      const data = response.data;
+      data.results.forEach(request => {
+        userRequests.push({
+          // TODO:
+          id: request.created_at,
+          isOpen: request.status === 0,
+          isProgress: request.status === 1,
+          isClosed: request.status === 3,
+          // TODO:
+          name: request.first_name || currentUser.firstname,
+          price: request.price,
+          description: request.details,
+          // TODO:
+          skills: request.skills || [],
+          location: request.city.display_name,
+          dateFrom: moment(request.begins_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
+          dateTo: moment(request.ends_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
+          // TODO:
+          buddy: request.current_buddy || undefined,
+          buddyCandiadates: request.buddy_candidates || [],
+          /* [
+            {
+              requestId: request.created_at,
+              name: 'Alice',
+              skills: ['travel', 'photo', 'cars'],
+              photo:
+                'https://images.unsplash.com/photo-1484329148740-e09e6c78c1e0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
+              bio: 'I whant to take tasks for you. Plase approve me :)',
+              contacts: 'Text me on telegram: https://t.me/buddy-alice',
+            },
+          ], */
+          buddiesCount: (request.buddy_candidates && request.buddy_candidates.length) || 0,
+        });
+      });
+
+      if (userRequests.length) {
+        drawUserRequests(userRequests);
+      }
+    })
+    .catch(error => {
+      showPageError([
+        {
+          title: 'Getting claims error',
+          message: error.response.data && error.response.data.detail,
+        },
+      ]);
+      return;
+    });
   if (isBuddy) {
-    drawBuddyRequests(userRequests, 'Moscow, Russia');
+    Axios.get(`/claims/buddy/`, { params: { limit: 100 } })
+      .then(response => {
+        const data = response.data;
+        let buddyRequests = [];
+        data.results.forEach(request => {
+          userRequests.push({
+            // TODO:
+            id: request.created_at,
+            isOpen: request.status === 0,
+            isProgress: request.status === 1,
+            isClosed: request.status === 3,
+            // TODO:
+            name: request.first_name,
+            price: request.price,
+            description: request.details,
+            // TODO:
+            skills: request.skills || [],
+            location: request.city.display_name,
+            dateFrom: moment(request.begins_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
+            dateTo: moment(request.ends_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
+            // TODO:
+            buddy: request.current_buddy || undefined,
+            buddyCandiadates: request.buddy_candidates || [],
+            /* [
+              {
+                requestId: request.created_at,
+                name: 'Alice',
+                skills: ['travel', 'photo', 'cars'],
+                photo:
+                  'https://images.unsplash.com/photo-1484329148740-e09e6c78c1e0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
+                bio: 'I whant to take tasks for you. Plase approve me :)',
+                contacts: 'Text me on telegram: https://t.me/buddy-alice',
+              },
+            ], */
+            buddiesCount: (request.buddy_candidates && request.buddy_candidates.length) || 0,
+          });
+        });
+
+        if (buddyRequests.length) {
+          drawBuddyRequests(buddyRequests);
+        }
+      })
+      .catch(error => {
+        showPageError([
+          {
+            title: 'Getting claims for buddy error',
+            message: error.response.data && error.response.data.detail,
+          },
+        ]);
+        return;
+      });
   }
 });
 
@@ -229,8 +260,8 @@ function drawUserRequests(requests) {
   );
 }
 
-function drawBuddyRequests(requests, buddyLocation) {
-  document.getElementById('buddy-city').innerHTML = buddyLocation;
+function drawBuddyRequests(requests) {
+  document.getElementById('buddy-city').innerHTML = currentUser.location;
   document.getElementById('buddy-requests').classList.remove('d-none');
   document.getElementById('buddy-requests-list-container').innerHTML = requestsList({
     // TODO: forBuddy if not apply
@@ -258,34 +289,61 @@ function handleCreateRequest(e) {
   const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
   submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
 
-  bannerContainer.innerHTML = createRequestSuccess();
-
-  const requestsList = document.getElementById('user-requests-list');
-  const requestItemNode = document.createElement('div');
-  requestItemNode.className = 'col-lg-3 col-md-4 col-sm-6 col-12 mb-3';
-  requestItemNode.innerHTML = requestItem({
-    id: Math.random(),
-    isOpen: true,
-    isProgress: false,
-    isClosed: false,
-    name: currentUser,
-    dateFrom: data['dateFrom'],
-    dateTo: data['dateTo'],
-    skills: typeof data['skills'] === 'string' ? [data['skills']] : data['skills'],
+  Axios.post('/claims/', {
+    city_id: lastLocation.cityId,
+    begins_at: moment(data['dateFrom'], 'DD.MM.YYYY').format(),
+    ends_at: moment(data['dateTo'], 'DD.MM.YYYY')
+      .hours(23)
+      .format(),
+    details: data['description'],
     price: formatPrice(data['price']),
-    description: data['description'],
-    location: lastLocation.place,
-  });
-  requestsList.prepend(requestItemNode);
+  })
+    .then(() => {
+      bannerContainer.innerHTML = createRequestSuccess();
 
-  document.getElementById('request-create-more').addEventListener('click', drawCreateRequest);
+      if (!userRequests.length) {
+        drawUserRequests([]);
+      }
+      const requestsList = document.getElementById('user-requests-list');
+      const requestItemNode = document.createElement('div');
+      requestItemNode.className = 'col-lg-3 col-md-4 col-sm-6 col-12 mb-3';
+      requestItemNode.innerHTML = requestItem({
+        id: Math.random(),
+        isOpen: true,
+        isProgress: false,
+        isClosed: false,
+        name: currentUser.firstname,
+        dateFrom: data['dateFrom'],
+        dateTo: data['dateTo'],
+        skills: typeof data['skills'] === 'string' ? [data['skills']] : data['skills'],
+        price: formatPrice(data['price']),
+        description: data['description'],
+        location: lastLocation.place,
+        buddiesCount: 0,
+      });
+      requestsList.prepend(requestItemNode);
+
+      document.getElementById('request-create-more').addEventListener('click', drawCreateRequest);
+    })
+    .catch(error => {
+      // TODO: initApiErrorHandling
+      showPageError([
+        {
+          title: 'Getting claims for buddy error',
+          message: error.response.data && error.response.data.detail,
+        },
+      ]);
+      submitButtonTemplate.restore();
+    });
 }
 
 function handleApplyForRequest() {
   const targetId = this.dataset['request'];
+  // FIXME: insert id here
+  Axios.patch(`/claims/${targetId}`);
   this.classList.add('d-none');
   document
-    .querySelector(`#buddy-requests .request-item[data-id='${targetId}'] .badge.d-none`)
+    .querySelector(`#buddy-requests .request-item[data-id='${targetId}'] .js-apply-badge`)
     .classList.remove('d-none');
 }
 
