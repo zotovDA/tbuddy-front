@@ -70,7 +70,7 @@ document.addEventListener('init', function() {
           photo: userData.image,
           place: userData.city && userData.city.display_name,
           city: userData.city && userData.city.id,
-          skills: userData.skills.map(skill => skill.activity),
+          skills: userData.skills && userData.skills.map(skill => skill.activity),
           contacts: userData.contacts,
 
           isBuddy: userData.is_buddy,
@@ -83,6 +83,7 @@ document.addEventListener('init', function() {
         }
       })
       .catch(error => {
+        console.error(error);
         if (error.response.status === 404) {
           initRegistrationSteps();
         } else {
@@ -104,6 +105,7 @@ function initRegistrationSteps(userData) {
       .addEventListener('submit', handleCreatingProfile);
   } else {
     // social user
+    // FIXME: handle existing data in inputs(phone numbers)
     profileContainer.innerHTML = profileEditTemplate({ ...userData, needCreate: true });
     document
       .getElementById('js-profile-edit-form')
