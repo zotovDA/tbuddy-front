@@ -78,7 +78,7 @@ document.addEventListener('init', async function() {
       isProgress: request.status === 1,
       isClosed: request.status === 3,
       name: request.applicant_profile.first_name,
-      price: request.price,
+      price: parseInt(request.price),
       description: request.details,
       activities: (request.activities || []).map(activity => activity.type),
       location: request.city.display_name,
@@ -319,12 +319,29 @@ function handleCreateRequest(e) {
 
 function handleApplyForRequest() {
   const targetId = this.dataset['request'];
-  // FIXME: insert id here
-  Axios.patch(`/claims/${targetId}`);
-  this.classList.add('d-none');
-  document
-    .querySelector(`#buddy-requests .request-item[data-id='${targetId}'] .js-apply-badge`)
-    .classList.remove('d-none');
+  const price = this.dataset['price'];
+  // TODO: handle price input on payment system integration
+  // TODO: open modal only on success request
+  Axios.post(`/claims/${targetId}/candidates/`, {
+    price: price,
+  })
+    .then(() => {
+      this.classList.add('d-none');
+      document
+        .querySelector(`#buddy-requests .request-item[data-id='${targetId}'] .js-apply-badge`)
+        .classList.remove('d-none');
+    })
+    .catch(error => {
+      showPageError([
+        {
+          title: 'Apply for request failed',
+          message:
+            error.response.data &&
+            (error.response.data.detail || error.response.data.non_field_errors),
+        },
+      ]);
+      return;
+    });
 }
 
 function handleSolveForRequest() {
