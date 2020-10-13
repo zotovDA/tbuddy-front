@@ -42,6 +42,7 @@ document.addEventListener('init', async function() {
   const isVerified = true;
   let isProfileCreated = false;
 
+  // FIXME: isAuth is true when user session expired
   if (!isAuth) {
     bannerContainer.innerHTML = unauthorizedTemplate();
     return;
@@ -70,43 +71,46 @@ document.addEventListener('init', async function() {
     return;
   }
 
+  function _formatClaim(request) {
+    const formattedClaim = {
+      id: request.id,
+      isOpen: request.status === 0,
+      isProgress: request.status === 1,
+      isClosed: request.status === 3,
+      name: request.applicant_profile.first_name,
+      price: request.price,
+      description: request.details,
+      activities: (request.activities || []).map(activity => activity.type),
+      location: request.city.display_name,
+      dateFrom: moment(request.begins_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
+      dateTo: moment(request.ends_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
+      buddy: request.candidate_accepted || undefined,
+      // TODO: fetch candidates on each claim
+      buddyCandiadates: request.buddy_candidates || [],
+      /* [
+        {
+          requestId: request.created_at,
+          name: 'Alice',
+          activities: ['travel', 'photo', 'cars'],
+          photo:
+            'https://images.unsplash.com/photo-1484329148740-e09e6c78c1e0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
+          bio: 'I whant to take tasks for you. Plase approve me :)',
+          contacts: 'Text me on telegram: https://t.me/buddy-alice',
+        },
+      ], */
+      buddiesCount: request.candidate_count || 0,
+    };
+
+    return formattedClaim;
+  }
+
   drawCreateRequest();
-  // TODO: fetch user requests
+  // TODO: add pagination
   Axios.get(`/claims/`, { params: { limit: 100 } })
     .then(response => {
       const data = response.data;
       data.results.forEach(request => {
-        userRequests.push({
-          // TODO:
-          id: request.created_at,
-          isOpen: request.status === 0,
-          isProgress: request.status === 1,
-          isClosed: request.status === 3,
-          // TODO:
-          name: request.first_name || currentUser.firstname,
-          price: request.price,
-          description: request.details,
-          // TODO:
-          skills: request.skills || [],
-          location: request.city.display_name,
-          dateFrom: moment(request.begins_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
-          dateTo: moment(request.ends_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
-          // TODO:
-          buddy: request.current_buddy || undefined,
-          buddyCandiadates: request.buddy_candidates || [],
-          /* [
-            {
-              requestId: request.created_at,
-              name: 'Alice',
-              skills: ['travel', 'photo', 'cars'],
-              photo:
-                'https://images.unsplash.com/photo-1484329148740-e09e6c78c1e0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
-              bio: 'I whant to take tasks for you. Plase approve me :)',
-              contacts: 'Text me on telegram: https://t.me/buddy-alice',
-            },
-          ], */
-          buddiesCount: (request.buddy_candidates && request.buddy_candidates.length) || 0,
-        });
+        userRequests.push(_formatClaim(request));
       });
 
       if (userRequests.length) {
@@ -123,42 +127,13 @@ document.addEventListener('init', async function() {
       return;
     });
   if (isBuddy) {
+    // TODO: add pagination
     Axios.get(`/claims/buddy/`, { params: { limit: 100 } })
       .then(response => {
         const data = response.data;
         let buddyRequests = [];
         data.results.forEach(request => {
-          userRequests.push({
-            // TODO:
-            id: request.created_at,
-            isOpen: request.status === 0,
-            isProgress: request.status === 1,
-            isClosed: request.status === 3,
-            // TODO:
-            name: request.first_name,
-            price: request.price,
-            description: request.details,
-            // TODO:
-            skills: request.skills || [],
-            location: request.city.display_name,
-            dateFrom: moment(request.begins_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
-            dateTo: moment(request.ends_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
-            // TODO:
-            buddy: request.current_buddy || undefined,
-            buddyCandiadates: request.buddy_candidates || [],
-            /* [
-              {
-                requestId: request.created_at,
-                name: 'Alice',
-                skills: ['travel', 'photo', 'cars'],
-                photo:
-                  'https://images.unsplash.com/photo-1484329148740-e09e6c78c1e0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
-                bio: 'I whant to take tasks for you. Plase approve me :)',
-                contacts: 'Text me on telegram: https://t.me/buddy-alice',
-              },
-            ], */
-            buddiesCount: (request.buddy_candidates && request.buddy_candidates.length) || 0,
-          });
+          buddyRequests.push(_formatClaim(request));
         });
 
         if (buddyRequests.length) {
@@ -297,6 +272,11 @@ function handleCreateRequest(e) {
       .format(),
     details: data['description'],
     price: formatPrice(data['price']),
+    activities: data['activities']
+      ? typeof data['activities'] === 'string'
+        ? [{ type: data['activities'] }]
+        : data['activities'].map(skill => ({ type: skill }))
+      : [],
   })
     .then(() => {
       bannerContainer.innerHTML = createRequestSuccess();
@@ -315,7 +295,7 @@ function handleCreateRequest(e) {
         name: currentUser.firstname,
         dateFrom: data['dateFrom'],
         dateTo: data['dateTo'],
-        skills: typeof data['skills'] === 'string' ? [data['skills']] : data['skills'],
+        skills: typeof data['activities'] === 'string' ? [data['activities']] : data['activities'],
         price: formatPrice(data['price']),
         description: data['description'],
         location: lastLocation.place,
