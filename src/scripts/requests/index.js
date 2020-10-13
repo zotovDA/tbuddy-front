@@ -42,6 +42,7 @@ document.addEventListener('init', async function() {
   const isVerified = true;
   let isProfileCreated = false;
 
+  // FIXME: isAuth is true when user session expired
   if (!isAuth) {
     bannerContainer.innerHTML = unauthorizedTemplate();
     return;
@@ -75,6 +76,7 @@ document.addEventListener('init', async function() {
   Axios.get(`/claims/`, { params: { limit: 100 } })
     .then(response => {
       const data = response.data;
+      // TODO: add more supported fields
       data.results.forEach(request => {
         userRequests.push({
           // TODO:
@@ -87,7 +89,7 @@ document.addEventListener('init', async function() {
           price: request.price,
           description: request.details,
           // TODO:
-          skills: request.skills || [],
+          activities: request.activities || [],
           location: request.city.display_name,
           dateFrom: moment(request.begins_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
           dateTo: moment(request.ends_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
@@ -98,7 +100,7 @@ document.addEventListener('init', async function() {
             {
               requestId: request.created_at,
               name: 'Alice',
-              skills: ['travel', 'photo', 'cars'],
+              activities: ['travel', 'photo', 'cars'],
               photo:
                 'https://images.unsplash.com/photo-1484329148740-e09e6c78c1e0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
               bio: 'I whant to take tasks for you. Plase approve me :)',
@@ -289,6 +291,7 @@ function handleCreateRequest(e) {
   const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
   submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
 
+  // TODO: add skills on created
   Axios.post('/claims/', {
     city_id: lastLocation.cityId,
     begins_at: moment(data['dateFrom'], 'DD.MM.YYYY').format(),
@@ -315,7 +318,8 @@ function handleCreateRequest(e) {
         name: currentUser.firstname,
         dateFrom: data['dateFrom'],
         dateTo: data['dateTo'],
-        skills: typeof data['skills'] === 'string' ? [data['skills']] : data['skills'],
+        activities:
+          typeof data['activities'] === 'string' ? [data['activities']] : data['activities'],
         price: formatPrice(data['price']),
         description: data['description'],
         location: lastLocation.place,

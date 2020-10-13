@@ -44,7 +44,7 @@ let currentUser = {
   photo: '',
   place: '',
   city: '',
-  skills: [],
+  activities: [],
   contacts: '',
 
   isBuddy: false,
@@ -70,7 +70,7 @@ document.addEventListener('init', function() {
           photo: userData.image,
           place: userData.city && userData.city.display_name,
           city: userData.city && userData.city.id,
-          skills: userData.skills && userData.skills.map(skill => skill.activity),
+          activities: userData.activities && userData.activities.map(activity => activity.type),
           contacts: userData.contacts,
 
           isBuddy: userData.is_buddy,
@@ -151,7 +151,11 @@ function drawUserProfile() {
     ...currentUser,
     age: moment().diff(moment(currentUser.dob, momentDateFormat), 'years'),
   });
-  document.getElementById('js-edit-buddy').addEventListener('click', () => drawBuddyEditProfile());
+  if (!currentUser.isBuddy) {
+    document
+      .getElementById('js-edit-buddy')
+      .addEventListener('click', () => drawBuddyEditProfile());
+  }
   document.getElementById('js-edit-primary').addEventListener('click', drawUserEditProfile);
   document
     .getElementById('js-photo-edit-modal-form')
@@ -228,7 +232,7 @@ function drawBuddyEditProfile(needCreate) {
     ...currentUser,
     profileSkills: requestsCategories.map(skill => ({
       label: skill,
-      checked: currentUser.skills.some(item => skill === item),
+      checked: currentUser.activities.some(item => skill === item),
     })),
     needCreate: needCreate,
   });
@@ -302,10 +306,11 @@ function handleEditBuddyProfile(e, inRegister) {
     bio: data['bio'],
     city_id: parseInt(data['city']),
     contacts: data['contacts'],
-    skills:
-      typeof data['skills'] === 'string'
-        ? [{ activity: data['skills'] }]
-        : data['skills'].map(skill => ({ activity: skill })),
+    activities: data['activities']
+      ? typeof data['activities'] === 'string'
+        ? [{ type: data['activities'] }]
+        : data['activities'].map(skill => ({ type: skill }))
+      : [],
   })
     .then(() => {
       currentUser = { ...currentUser, ...data };

@@ -12,17 +12,24 @@
     <img style="min-height: 200px; max-height: 300px;" class="img-cover rounded profile-image js-profile-image"
       src='{{ photo }}' alt='profile photo' />
 
+    {{#if isBuddy}}
+    {{!-- TODO: request buddies to change theirs info --}}
+    <p class="small text-muted">To change your buddy profile info contact us: <a
+        href="mailto:support@travelbuddy.io">support@travelbuddy.io</a></p>
+    {{else}}
     <ul class="list-group my-3">
       <a href="javascript:void()" id="js-edit-primary" class="list-group-item list-group-item-action">Edit main info</a>
       <a href="javascript:void()" data-toggle="modal" data-target="#photoChangeModal" id="js-edit-photo"
         class="list-group-item list-group-item-action">Edit photo</a>
       {{#if isBuddy}}
-      <a href="javascript:void()" id="js-edit-buddy" class="list-group-item list-group-item-action">Edit buddy info</a>
+      <a href="javascript:void()" id="js-edit-buddy" class="list-group-item list-group-item-action">Edit buddy
+        info</a>
       {{else}}
       <a href="javascript:void()" id="js-edit-buddy" class="list-group-item list-group-item-action active">Become
         buddy</a>
       {{/if}}
     </ul>
+    {{/if}}
   </div>
   <div class="col-12 col-md-8 col-lg-6">
     <h1>
