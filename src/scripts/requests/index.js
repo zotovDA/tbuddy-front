@@ -40,8 +40,7 @@ document.addEventListener('init', async function() {
 
   let isBuddy = false;
   const isAuth = !!currentUser.id;
-  // TODO: fetch verify status
-  const isVerified = true;
+  let isVerified = false;
   let isProfileCreated = false;
 
   // FIXME: isAuth is true when user session expired
@@ -56,6 +55,7 @@ document.addEventListener('init', async function() {
         currentUser.location = userData.city && userData.city.display_name;
 
         isBuddy = userData.is_buddy;
+        isVerified = userData.user.is_email_verified;
         isProfileCreated = userData.is_manual;
       })
       .catch(() => {
