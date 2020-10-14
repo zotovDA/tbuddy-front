@@ -47,45 +47,35 @@
   <div class="card-footer">
     {{ buddiesCount }} buddies applied
     {{#if buddiesCount}}
-    <div class="text-center"> <a data-toggle="modal" data-target="#chooseBuddy-{{ id }}" role="button" class="small">
+    <div class="text-center"> <a data-request-id="{{ id }}" role="button" class="js-show-buddy-candidates small">
         choose buddy
       </a></div>
-
-
-    {{!-- CHOOSE BUDDY MODAL --}}
-    <div class="modal fade" id="chooseBuddy-{{ id }}" tabindex="-1" aria-labelledby="chooseBuddyLabel-{{ id }}"
-      aria-hidden="true">
-      <div class="modal-dialog modal-fullscreen-sm-down">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="chooseBuddyLabel-{{ id }}">Choose who will solve your request</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>Below you will see buddies contact info. Discuss request details with whom you like.</p>
-            {{#each buddyCandiadates }}
-            <div class="mb-3">
-              {{> profile/memberCard 
-                name=name
-                photo=photo
-                skills=skills
-                bio=bio 
-                contacts=contacts
-              }}
-              <div class="text-center">
-                <button data-request="{{ requestId }}" data-name="{{ name }}" data-contacts="{{ contacts }}"
-                  class="js-choose-buddy btn btn-primary" data-dismiss="modal">Choose {{ name }}</button>
-              </div>
-            </div>
-            {{/each}}
-          </div>
-        </div>
-      </div>
-    </div>
     {{/if}}
   </div>
   {{/unless}}
   {{/if}}
+</div>
+
+{{!-- CHOOSE BUDDY MODAL --}}
+<div class="modal fade" id="chooseBuddy" tabindex="-1" aria-labelledby="chooseBuddyLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="chooseBuddyLabel">Choose who will solve your request</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Below you will see buddies contact info. Discuss request details with whom you like.</p>
+        <div id="buddy-candidates">
+          {{!-- Loaded with scripts --}}
+          <div class="text-center">
+            <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
+            <span class="text-muted">loading&hellip;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

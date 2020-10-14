@@ -17,6 +17,7 @@ import createRequestSuccess from '../../templates/requests/_createSuccess.hbs';
 import requestsList from '../../templates/requests/requestsList.hbs';
 import requestItem from '../../templates/requests/requestItem.hbs';
 import requestBuddy from '../../templates/requests/_requestBuddy.hbs';
+import buddyCandidates from '../../templates/requests/_buddyCandidates.hbs';
 import { getCurrentUserId } from '../auth';
 import Axios from 'axios';
 import { showPageError } from '../view';
@@ -73,6 +74,7 @@ document.addEventListener('init', async function() {
   }
 
   function _formatClaim(request) {
+    // TODO: add isApplied if user applied
     const formattedClaim = {
       id: request.id,
       isOpen: request.status === 0,
@@ -85,20 +87,13 @@ document.addEventListener('init', async function() {
       location: request.city.display_name,
       dateFrom: moment(request.begins_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
       dateTo: moment(request.ends_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
-      buddy: request.candidate_accepted || undefined,
-      // TODO: fetch candidates on each claim
-      buddyCandiadates: request.buddy_candidates || [],
-      /* [
-        {
-          requestId: request.created_at,
-          name: 'Alice',
-          activities: ['travel', 'photo', 'cars'],
-          photo:
-            'https://images.unsplash.com/photo-1484329148740-e09e6c78c1e0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
-          bio: 'I whant to take tasks for you. Plase approve me :)',
-          contacts: 'Text me on telegram: https://t.me/buddy-alice',
-        },
-      ], */
+      buddy:
+        (request.candidate_accepted && {
+          id: request.candidate_accepted.id,
+          name: request.candidate_accepted.respondent_profile.first_name,
+          contacts: request.candidate_accepted.respondent_profile.contacts,
+        }) ||
+        undefined,
       buddiesCount: request.candidate_count || 0,
     };
 
@@ -231,8 +226,8 @@ function drawUserRequests(requests) {
   [...document.querySelectorAll('#user-requests .js-solve-button')].forEach(btn =>
     btn.addEventListener('click', handleSolveForRequest)
   );
-  [...document.querySelectorAll('#user-requests .js-choose-buddy')].forEach(btn =>
-    btn.addEventListener('click', handleChooseBuddyForRequest)
+  [...document.querySelectorAll('#user-requests .js-show-buddy-candidates')].forEach(btn =>
+    btn.addEventListener('click', handleShowBuddyCandidatesForRequest)
   );
 }
 
@@ -322,7 +317,6 @@ function handleApplyForRequest() {
   const targetId = this.dataset['request'];
   const price = this.dataset['price'];
   // TODO: handle price input on payment system integration
-  // TODO: open modal only on success request
   Axios.post(`/claims/${targetId}/candidates/`, {
     price: price,
   })
@@ -365,11 +359,72 @@ function handleSolveForRequest() {
     .classList.add('d-none');
 }
 
-function handleChooseBuddyForRequest() {
-  const targetId = this.dataset['request'];
-  const name = this.dataset['name'];
-  const contacts = this.dataset['contacts'];
+function handleShowBuddyCandidatesForRequest() {
+  const requestId = this.dataset.requestId;
+  const buddiesCandidatesModal = new Modal(document.getElementById('chooseBuddy'));
+  const candidatesListTemplate = new TemplateManager(document.getElementById('buddy-candidates'));
 
+  buddiesCandidatesModal.show();
+  document
+    .getElementById('chooseBuddy')
+    .addEventListener('hidden.bs.modal', () => candidatesListTemplate.restore());
+
+  Axios.get(`/claims/${requestId}/candidates/`)
+    .then(response => {
+      candidatesListTemplate.change(
+        buddyCandidates({
+          buddyCandiadates: response.data.results.map(candidate => ({
+            requestId: requestId,
+            candidateId: candidate.id,
+            name: candidate.respondent_profile.first_name,
+            photo: candidate.respondent_profile.image,
+            skills: candidate.respondent_profile.activities.map(activity => activity.type),
+            bio: candidate.respondent_profile.bio,
+            contacts: candidate.respondent_profile.contacts,
+          })),
+        })
+      );
+
+      [...document.querySelectorAll('.js-choose-buddy')].forEach(btn =>
+        btn.addEventListener('click', function() {
+          const candidateId = this.dataset.candidate;
+          const name = this.dataset.name;
+          const contacts = this.dataset.contacts;
+          Axios.patch(`/claims/${requestId}/candidates/${candidateId}`, {
+            is_accepted: true,
+          })
+            .then(() => {
+              handleChooseBuddyForRequest(requestId, name, contacts);
+              buddiesCandidatesModal.hide();
+            })
+            .catch(error => {
+              showPageError([
+                {
+                  title: 'Something wrong',
+                  message:
+                    error.response.data &&
+                    (error.response.data.detail || error.response.data.non_field_errors),
+                },
+              ]);
+              return;
+            });
+        })
+      );
+    })
+    .catch(error => {
+      showPageError([
+        {
+          title: 'Something wrong',
+          message:
+            error.response.data &&
+            (error.response.data.detail || error.response.data.non_field_errors),
+        },
+      ]);
+      return;
+    });
+}
+
+function handleChooseBuddyForRequest(targetId, name, contacts) {
   document.querySelector(
     `#user-requests .request-item[data-id='${targetId}'] .card-footer`
   ).innerHTML = requestBuddy({
