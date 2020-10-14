@@ -1,6 +1,7 @@
 import '../common';
 import '../../stylesheets/requests.scss';
 import IMask from 'imask';
+import { Modal } from 'bootstrap';
 import 'choices.js/public/assets/styles/choices.min.css';
 import Choices from 'choices.js';
 import moment from 'moment';
@@ -284,7 +285,7 @@ function handleCreateRequest(e) {
       if (!userRequests.length) {
         drawUserRequests([]);
       }
-      const requestsList = document.getElementById('user-requests-list');
+      const requestsList = document.getElementsByClassName('js-user-requests-list');
       const requestItemNode = document.createElement('div');
       requestItemNode.className = 'col-lg-3 col-md-4 col-sm-6 col-12 mb-3';
       requestItemNode.innerHTML = requestItem({
@@ -326,6 +327,8 @@ function handleApplyForRequest() {
     price: price,
   })
     .then(() => {
+      const successModal = new Modal(document.getElementById('applySuccess'));
+      successModal.show();
       this.classList.add('d-none');
       document
         .querySelector(`#buddy-requests .request-item[data-id='${targetId}'] .js-apply-badge`)
