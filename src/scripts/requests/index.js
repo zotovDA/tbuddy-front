@@ -79,7 +79,8 @@ document.addEventListener('init', async function() {
       id: request.id,
       isOpen: request.status === 0,
       isProgress: request.status === 1,
-      isClosed: request.status === 3,
+      isCanceled: request.status === 3,
+      isDone: request.status === 2,
       name: request.applicant_profile.first_name,
       price: parseInt(request.price),
       description: request.details,
@@ -231,6 +232,9 @@ function drawUserRequests(requests) {
   [...document.querySelectorAll('#user-requests .js-show-buddy-candidates')].forEach(btn =>
     btn.addEventListener('click', handleShowBuddyCandidatesForRequest)
   );
+  [...document.querySelectorAll('#user-requests .js-cancel-request')].forEach(btn =>
+    btn.addEventListener('click', handleCancelRequest)
+  );
 }
 
 function drawBuddyRequests(requests) {
@@ -279,7 +283,8 @@ function handleCreateRequest(e) {
         : data['activities'].map(skill => ({ type: skill }))
       : [],
   })
-    .then(() => {
+    .then(response => {
+      const id = response.data && response.data.id;
       bannerContainer.innerHTML = createRequestSuccess();
 
       if (!userRequests.length) {
@@ -289,7 +294,7 @@ function handleCreateRequest(e) {
       const requestItemNode = document.createElement('div');
       requestItemNode.className = 'col-lg-3 col-md-4 col-sm-6 col-12 mb-3';
       requestItemNode.innerHTML = requestItem({
-        id: Math.random(),
+        id: id || Math.random(),
         isOpen: true,
         isProgress: false,
         isClosed: false,
@@ -304,6 +309,9 @@ function handleCreateRequest(e) {
         buddiesCount: 0,
       });
       requestsList.prepend(requestItemNode);
+      document
+        .querySelector('#user-requests .js-cancel-request')
+        .addEventListener('click', handleCancelRequest);
 
       document.getElementById('request-create-more').addEventListener('click', drawCreateRequest);
     })
@@ -470,4 +478,30 @@ function handleChooseBuddyForRequest(targetId, name, contacts) {
   document
     .querySelector(`#user-requests .request-item[data-id='${targetId}'] .js-progress-badge`)
     .classList.remove('d-none');
+}
+
+function handleCancelRequest() {
+  const requestId = this.dataset.requestId;
+
+  Axios.patch(`/claims/${requestId}/`, {
+    status: 3, // cancel request
+  })
+    .then(() => {
+      const request = document.querySelector(`.request-item[data-id="${requestId}"]`);
+      request.querySelector('.js-open-badge').classList.add('d-none');
+      request.querySelector('.card-header').classList.remove('bg-primary');
+      request.querySelector('.card-header').classList.add('bg-dark');
+    })
+    .catch(error => {
+      showPageError([
+        {
+          title: "Can't cancel request",
+          message:
+            (error.response.data &&
+              (error.response.data.detail || error.response.data.non_field_errors)) ||
+            JSON.stringify(error.response.data),
+        },
+      ]);
+      return;
+    });
 }
