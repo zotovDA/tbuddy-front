@@ -207,9 +207,11 @@ function drawCreateRequest() {
       },
     },
   });
+  const minDate = new Date();
+  minDate.setDate(minDate.getDate() - 1);
   IMask(document.querySelector('[name=dateFrom]'), {
     mask: Date,
-    min: new Date(),
+    min: minDate,
   });
   IMask(document.querySelector('[name=dateTo]'), {
     mask: Date,
@@ -262,7 +264,10 @@ function handleCreateRequest(e) {
 
   Axios.post('/claims/', {
     city_id: lastLocation.cityId,
-    begins_at: moment(data['dateFrom'], 'DD.MM.YYYY').format(),
+    begins_at: moment(data['dateFrom'], 'DD.MM.YYYY')
+      .hours(moment().get('hour'))
+      .minutes(moment().get('minute') + 1)
+      .format(),
     ends_at: moment(data['dateTo'], 'DD.MM.YYYY')
       .hours(23)
       .format(),
@@ -280,7 +285,7 @@ function handleCreateRequest(e) {
       if (!userRequests.length) {
         drawUserRequests([]);
       }
-      const requestsList = document.getElementsByClassName('js-user-requests-list');
+      const requestsList = document.querySelector('#user-requests .js-user-requests-list');
       const requestItemNode = document.createElement('div');
       requestItemNode.className = 'col-lg-3 col-md-4 col-sm-6 col-12 mb-3';
       requestItemNode.innerHTML = requestItem({
@@ -291,7 +296,8 @@ function handleCreateRequest(e) {
         name: currentUser.firstname,
         dateFrom: data['dateFrom'],
         dateTo: data['dateTo'],
-        skills: typeof data['activities'] === 'string' ? [data['activities']] : data['activities'],
+        activities:
+          typeof data['activities'] === 'string' ? [data['activities']] : data['activities'],
         price: formatPrice(data['price']),
         description: data['description'],
         location: lastLocation.place,
@@ -343,20 +349,38 @@ function handleApplyForRequest() {
 
 function handleSolveForRequest() {
   const targetId = this.dataset['request'];
-  // remove solve btn
-  this.classList.add('d-none');
 
-  // change header bg
-  const requestHeader = document.querySelector(
-    `#user-requests .request-item[data-id='${targetId}'] .card-header`
-  );
-  requestHeader.classList.remove('bg-primary');
-  requestHeader.classList.add('bg-success');
+  Axios.patch(`/claims/${targetId}/`, {
+    status: 2, // close request
+  })
+    .then(() => {
+      // remove solve btn
+      this.classList.add('d-none');
 
-  // remove status badges
-  document
-    .querySelector(`#user-requests .request-item[data-id='${targetId}'] .js-progress-badge`)
-    .classList.add('d-none');
+      // change header bg
+      const requestHeader = document.querySelector(
+        `#user-requests .request-item[data-id='${targetId}'] .card-header`
+      );
+      requestHeader.classList.remove('bg-primary');
+      requestHeader.classList.add('bg-success');
+
+      // remove status badges
+      document
+        .querySelector(`#user-requests .request-item[data-id='${targetId}'] .js-progress-badge`)
+        .classList.add('d-none');
+    })
+    .catch(error => {
+      showPageError([
+        {
+          title: "Can't close request",
+          message:
+            (error.response.data &&
+              (error.response.data.detail || error.response.data.non_field_errors)) ||
+            JSON.stringify(error.response.data),
+        },
+      ]);
+      return;
+    });
 }
 
 function handleShowBuddyCandidatesForRequest() {
