@@ -1,0 +1,15 @@
+{{#each buddyCandiadates }}
+<div class="mb-3">
+  {{> profile/memberCard 
+    name=name
+    photo=photo
+    skills=skills
+    bio=bio 
+    contacts=contacts
+  }}
+  <div class="text-center">
+    <button data-request="{{ requestId }}" data-candidate="{{ candidateId }}" data-name="{{ name }}" data-contacts="{{ contacts }}"
+      class="js-choose-buddy btn btn-primary">Choose {{ name }}</button>
+  </div>
+</div>
+{{/each}}

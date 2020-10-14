@@ -1,19 +1,8 @@
 <div>
-  <div id="user-requests-list" class="row">
+  <div class="row js-user-requests-list">
     {{#each requests }}
     <div class="col-lg-3 col-md-4 col-sm-6 col-12 mb-3">
-      {{> requests/requestItem 
-        id=id
-        name=name
-        price=price
-        skills=skills
-        desctiption=desctiption 
-        dateFrom=dateFrom
-        dateTo=dateTo
-
-        forBuddy=forBuddy
-        isApplied=isApplied
-      }}
+      {{> requests/requestItem }}
     </div>
     {{/each}}
   </div>

@@ -1,6 +1,7 @@
 import '../common';
 import '../../stylesheets/requests.scss';
 import IMask from 'imask';
+import { Modal } from 'bootstrap';
 import 'choices.js/public/assets/styles/choices.min.css';
 import Choices from 'choices.js';
 import moment from 'moment';
@@ -16,6 +17,7 @@ import createRequestSuccess from '../../templates/requests/_createSuccess.hbs';
 import requestsList from '../../templates/requests/requestsList.hbs';
 import requestItem from '../../templates/requests/requestItem.hbs';
 import requestBuddy from '../../templates/requests/_requestBuddy.hbs';
+import buddyCandidates from '../../templates/requests/_buddyCandidates.hbs';
 import { getCurrentUserId } from '../auth';
 import Axios from 'axios';
 import { showPageError } from '../view';
@@ -38,8 +40,7 @@ document.addEventListener('init', async function() {
 
   let isBuddy = false;
   const isAuth = !!currentUser.id;
-  // TODO: fetch verify status
-  const isVerified = true;
+  let isVerified = false;
   let isProfileCreated = false;
 
   // FIXME: isAuth is true when user session expired
@@ -54,6 +55,7 @@ document.addEventListener('init', async function() {
         currentUser.location = userData.city && userData.city.display_name;
 
         isBuddy = userData.is_buddy;
+        isVerified = userData.user.is_email_verified;
         isProfileCreated = userData.is_manual;
       })
       .catch(() => {
@@ -72,32 +74,27 @@ document.addEventListener('init', async function() {
   }
 
   function _formatClaim(request) {
+    // TODO: add isApplied if user applied
     const formattedClaim = {
       id: request.id,
       isOpen: request.status === 0,
       isProgress: request.status === 1,
-      isClosed: request.status === 3,
+      isCanceled: request.status === 3,
+      isDone: request.status === 2,
       name: request.applicant_profile.first_name,
-      price: request.price,
+      price: parseInt(request.price),
       description: request.details,
       activities: (request.activities || []).map(activity => activity.type),
       location: request.city.display_name,
       dateFrom: moment(request.begins_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
       dateTo: moment(request.ends_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
-      buddy: request.candidate_accepted || undefined,
-      // TODO: fetch candidates on each claim
-      buddyCandiadates: request.buddy_candidates || [],
-      /* [
-        {
-          requestId: request.created_at,
-          name: 'Alice',
-          activities: ['travel', 'photo', 'cars'],
-          photo:
-            'https://images.unsplash.com/photo-1484329148740-e09e6c78c1e0?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=900&q=60',
-          bio: 'I whant to take tasks for you. Plase approve me :)',
-          contacts: 'Text me on telegram: https://t.me/buddy-alice',
-        },
-      ], */
+      buddy:
+        (request.candidate_accepted && {
+          id: request.candidate_accepted.id,
+          name: request.candidate_accepted.respondent_profile.first_name,
+          contacts: request.candidate_accepted.respondent_profile.contacts,
+        }) ||
+        undefined,
       buddiesCount: request.candidate_count || 0,
     };
 
@@ -211,9 +208,11 @@ function drawCreateRequest() {
       },
     },
   });
+  const minDate = new Date();
+  minDate.setDate(minDate.getDate() - 1);
   IMask(document.querySelector('[name=dateFrom]'), {
     mask: Date,
-    min: new Date(),
+    min: minDate,
   });
   IMask(document.querySelector('[name=dateTo]'), {
     mask: Date,
@@ -230,8 +229,11 @@ function drawUserRequests(requests) {
   [...document.querySelectorAll('#user-requests .js-solve-button')].forEach(btn =>
     btn.addEventListener('click', handleSolveForRequest)
   );
-  [...document.querySelectorAll('#user-requests .js-choose-buddy')].forEach(btn =>
-    btn.addEventListener('click', handleChooseBuddyForRequest)
+  [...document.querySelectorAll('#user-requests .js-show-buddy-candidates')].forEach(btn =>
+    btn.addEventListener('click', handleShowBuddyCandidatesForRequest)
+  );
+  [...document.querySelectorAll('#user-requests .js-cancel-request')].forEach(btn =>
+    btn.addEventListener('click', handleCancelRequest)
   );
 }
 
@@ -266,7 +268,10 @@ function handleCreateRequest(e) {
 
   Axios.post('/claims/', {
     city_id: lastLocation.cityId,
-    begins_at: moment(data['dateFrom'], 'DD.MM.YYYY').format(),
+    begins_at: moment(data['dateFrom'], 'DD.MM.YYYY')
+      .hours(moment().get('hour'))
+      .minutes(moment().get('minute') + 1)
+      .format(),
     ends_at: moment(data['dateTo'], 'DD.MM.YYYY')
       .hours(23)
       .format(),
@@ -278,30 +283,35 @@ function handleCreateRequest(e) {
         : data['activities'].map(skill => ({ type: skill }))
       : [],
   })
-    .then(() => {
+    .then(response => {
+      const id = response.data && response.data.id;
       bannerContainer.innerHTML = createRequestSuccess();
 
       if (!userRequests.length) {
         drawUserRequests([]);
       }
-      const requestsList = document.getElementById('user-requests-list');
+      const requestsList = document.querySelector('#user-requests .js-user-requests-list');
       const requestItemNode = document.createElement('div');
       requestItemNode.className = 'col-lg-3 col-md-4 col-sm-6 col-12 mb-3';
       requestItemNode.innerHTML = requestItem({
-        id: Math.random(),
+        id: id || Math.random(),
         isOpen: true,
         isProgress: false,
         isClosed: false,
         name: currentUser.firstname,
         dateFrom: data['dateFrom'],
         dateTo: data['dateTo'],
-        skills: typeof data['activities'] === 'string' ? [data['activities']] : data['activities'],
+        activities:
+          typeof data['activities'] === 'string' ? [data['activities']] : data['activities'],
         price: formatPrice(data['price']),
         description: data['description'],
         location: lastLocation.place,
         buddiesCount: 0,
       });
       requestsList.prepend(requestItemNode);
+      document
+        .querySelector('#user-requests .js-cancel-request')
+        .addEventListener('click', handleCancelRequest);
 
       document.getElementById('request-create-more').addEventListener('click', drawCreateRequest);
     })
@@ -319,37 +329,134 @@ function handleCreateRequest(e) {
 
 function handleApplyForRequest() {
   const targetId = this.dataset['request'];
-  // FIXME: insert id here
-  Axios.patch(`/claims/${targetId}`);
-  this.classList.add('d-none');
-  document
-    .querySelector(`#buddy-requests .request-item[data-id='${targetId}'] .js-apply-badge`)
-    .classList.remove('d-none');
+  const price = this.dataset['price'];
+  // TODO: handle price input on payment system integration
+  Axios.post(`/claims/${targetId}/candidates/`, {
+    price: price,
+  })
+    .then(() => {
+      const successModal = new Modal(document.getElementById('applySuccess'));
+      successModal.show();
+      this.classList.add('d-none');
+      document
+        .querySelector(`#buddy-requests .request-item[data-id='${targetId}'] .js-apply-badge`)
+        .classList.remove('d-none');
+    })
+    .catch(error => {
+      showPageError([
+        {
+          title: 'Apply for request failed',
+          message:
+            error.response.data &&
+            (error.response.data.detail || error.response.data.non_field_errors),
+        },
+      ]);
+      return;
+    });
 }
 
 function handleSolveForRequest() {
   const targetId = this.dataset['request'];
-  // remove solve btn
-  this.classList.add('d-none');
 
-  // change header bg
-  const requestHeader = document.querySelector(
-    `#user-requests .request-item[data-id='${targetId}'] .card-header`
-  );
-  requestHeader.classList.remove('bg-primary');
-  requestHeader.classList.add('bg-success');
+  Axios.patch(`/claims/${targetId}/`, {
+    status: 2, // close request
+  })
+    .then(() => {
+      // remove solve btn
+      this.classList.add('d-none');
 
-  // remove status badges
-  document
-    .querySelector(`#user-requests .request-item[data-id='${targetId}'] .js-progress-badge`)
-    .classList.add('d-none');
+      // change header bg
+      const requestHeader = document.querySelector(
+        `#user-requests .request-item[data-id='${targetId}'] .card-header`
+      );
+      requestHeader.classList.remove('bg-primary');
+      requestHeader.classList.add('bg-success');
+
+      // remove status badges
+      document
+        .querySelector(`#user-requests .request-item[data-id='${targetId}'] .js-progress-badge`)
+        .classList.add('d-none');
+    })
+    .catch(error => {
+      showPageError([
+        {
+          title: "Can't close request",
+          message:
+            (error.response.data &&
+              (error.response.data.detail || error.response.data.non_field_errors)) ||
+            JSON.stringify(error.response.data),
+        },
+      ]);
+      return;
+    });
 }
 
-function handleChooseBuddyForRequest() {
-  const targetId = this.dataset['request'];
-  const name = this.dataset['name'];
-  const contacts = this.dataset['contacts'];
+function handleShowBuddyCandidatesForRequest() {
+  const requestId = this.dataset.requestId;
+  const buddiesCandidatesModal = new Modal(document.getElementById('chooseBuddy'));
+  const candidatesListTemplate = new TemplateManager(document.getElementById('buddy-candidates'));
 
+  buddiesCandidatesModal.show();
+  document
+    .getElementById('chooseBuddy')
+    .addEventListener('hidden.bs.modal', () => candidatesListTemplate.restore());
+
+  Axios.get(`/claims/${requestId}/candidates/`)
+    .then(response => {
+      candidatesListTemplate.change(
+        buddyCandidates({
+          buddyCandiadates: response.data.results.map(candidate => ({
+            requestId: requestId,
+            candidateId: candidate.id,
+            name: candidate.respondent_profile.first_name,
+            photo: candidate.respondent_profile.image,
+            skills: candidate.respondent_profile.activities.map(activity => activity.type),
+            bio: candidate.respondent_profile.bio,
+            contacts: candidate.respondent_profile.contacts,
+          })),
+        })
+      );
+
+      [...document.querySelectorAll('.js-choose-buddy')].forEach(btn =>
+        btn.addEventListener('click', function() {
+          const candidateId = this.dataset.candidate;
+          const name = this.dataset.name;
+          const contacts = this.dataset.contacts;
+          Axios.patch(`/claims/${requestId}/candidates/${candidateId}`, {
+            is_accepted: true,
+          })
+            .then(() => {
+              handleChooseBuddyForRequest(requestId, name, contacts);
+              buddiesCandidatesModal.hide();
+            })
+            .catch(error => {
+              showPageError([
+                {
+                  title: 'Something wrong',
+                  message:
+                    error.response.data &&
+                    (error.response.data.detail || error.response.data.non_field_errors),
+                },
+              ]);
+              return;
+            });
+        })
+      );
+    })
+    .catch(error => {
+      showPageError([
+        {
+          title: 'Something wrong',
+          message:
+            error.response.data &&
+            (error.response.data.detail || error.response.data.non_field_errors),
+        },
+      ]);
+      return;
+    });
+}
+
+function handleChooseBuddyForRequest(targetId, name, contacts) {
   document.querySelector(
     `#user-requests .request-item[data-id='${targetId}'] .card-footer`
   ).innerHTML = requestBuddy({
@@ -371,4 +478,30 @@ function handleChooseBuddyForRequest() {
   document
     .querySelector(`#user-requests .request-item[data-id='${targetId}'] .js-progress-badge`)
     .classList.remove('d-none');
+}
+
+function handleCancelRequest() {
+  const requestId = this.dataset.requestId;
+
+  Axios.patch(`/claims/${requestId}/`, {
+    status: 3, // cancel request
+  })
+    .then(() => {
+      const request = document.querySelector(`.request-item[data-id="${requestId}"]`);
+      request.querySelector('.js-open-badge').classList.add('d-none');
+      request.querySelector('.card-header').classList.remove('bg-primary');
+      request.querySelector('.card-header').classList.add('bg-dark');
+    })
+    .catch(error => {
+      showPageError([
+        {
+          title: "Can't cancel request",
+          message:
+            (error.response.data &&
+              (error.response.data.detail || error.response.data.non_field_errors)) ||
+            JSON.stringify(error.response.data),
+        },
+      ]);
+      return;
+    });
 }
