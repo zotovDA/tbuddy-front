@@ -35,6 +35,12 @@ let bannerContainer;
 
 let userRequests = [];
 
+// CHECK IF USER IS FIRST TIME VISITER
+if (!localStorage.getItem('COVID_TEST_PASSED')) {
+  window.location = '/about.html';
+  localStorage.setItem('COVID_TEST_PASSED', 'true');
+}
+
 document.addEventListener('init', async function() {
   bannerContainer = document.getElementById('banner-container');
 
@@ -63,7 +69,6 @@ document.addEventListener('init', async function() {
         return;
       });
   }
-  // FIXME: handle verify error
   if (!isVerified) {
     document.getElementById('email-verify').classList.remove('d-none');
     return;
