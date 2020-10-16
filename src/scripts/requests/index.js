@@ -5,7 +5,7 @@ import { Modal } from 'bootstrap';
 import 'choices.js/public/assets/styles/choices.min.css';
 import Choices from 'choices.js';
 import moment from 'moment';
-import { debounce, formatPrice, formDataToObj, searchCity, TemplateManager } from '../helpers';
+import { debounce, parsePrice, formDataToObj, searchCity, TemplateManager } from '../helpers';
 
 import { requestsCategories } from '../constants';
 
@@ -281,7 +281,7 @@ function handleCreateRequest(e) {
       .hours(23)
       .format(),
     details: data['description'],
-    price: formatPrice(data['price']),
+    price: parsePrice(data['price']),
     activities: data['activities']
       ? typeof data['activities'] === 'string'
         ? [{ type: data['activities'] }]
@@ -308,7 +308,7 @@ function handleCreateRequest(e) {
         dateTo: data['dateTo'],
         activities:
           typeof data['activities'] === 'string' ? [data['activities']] : data['activities'],
-        price: formatPrice(data['price']),
+        price: parsePrice(data['price']),
         description: data['description'],
         location: lastLocation.place,
         buddiesCount: 0,

@@ -1,3 +1,5 @@
+// Helpers that manipulates DOM
+
 import Toast from 'bootstrap/js/dist/toast';
 
 import unauthorizedTemplate from '../templates/header/_unauthorized.hbs';
@@ -5,6 +7,7 @@ import authorizedTemplate from '../templates/header/_authorized.hbs';
 import toastTemplate from '../templates/pageToast.hbs';
 
 import alertTemplate from '../templates/alert.hbs';
+import { parseApiErrors } from './helpers';
 
 const TOASTS_WRAPPER_ID = 'js-toasts-content';
 
@@ -15,8 +18,7 @@ function showToasts() {
   });
 }
 
-/**
- * add toasts in dom and init them
+/** Add toasts in dom and init them
  * @param {{title: string, message: string}[]} errorsList
  */
 export function showPageError(errorsList) {
@@ -27,9 +29,8 @@ export function showPageError(errorsList) {
   showToasts();
 }
 
-/**
- * Update profile control in nav menu
- * @param {{name: string} | null} user
+/** Update profile control in nav menu
+ * @param {{name: string}} user
  */
 export function updateNavUser(user) {
   const profileNavControl = document.getElementById('js-nav-profile');
@@ -46,9 +47,40 @@ export function updateNavUser(user) {
   }
 }
 
-// ------ COMMON
 export function drawPageError(message) {
   const pageErrorNode = document.getElementById('js-page-error');
   if (!pageErrorNode) throw 'No page error node provided';
   pageErrorNode.innerHTML = alertTemplate({ type: 'danger', message: message });
+}
+
+/** Handle validation in bootstrap form
+ * @param {Element} form
+ * @param {any} response
+ * @param {boolean} forceError
+ */
+export function initApiErrorHandling(form, response, forceError) {
+  if (!response) return null;
+  const formError = form.querySelector('.form-feedback.invalid-feedback');
+
+  // clear existing errors
+  [...form.querySelectorAll('[name]')].forEach(input => input.classList.remove('is-invalid'));
+  form.classList.remove('was-validated');
+  formError.classList.remove('d-block');
+
+  // if non field errors
+  if (forceError || response.detail || response.non_field_errors) {
+    formError.innerHTML = parseApiErrors(response) || 'Something unexpected happened';
+    formError.classList.add('d-block');
+    return;
+  }
+
+  // handle fields errors
+  Object.keys(response).forEach(field => {
+    try {
+      form.querySelector(`[name=${field}] + .invalid-feedback`).innerHTML = response[field];
+      form.querySelector(`[name=${field}]`).classList.add('is-invalid');
+    } catch (e) {
+      // pass
+    }
+  });
 }
