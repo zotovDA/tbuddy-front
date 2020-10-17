@@ -10,8 +10,17 @@ import alertTemplate from '../templates/alert.hbs';
 import { handleGoBack, parseApiErrors } from './helpers';
 import { handleLogout } from './auth';
 import animateScrollTo from 'animated-scroll-to';
-
-const TOASTS_WRAPPER_ID = 'js-toasts-content';
+import {
+  PROFILE_NAV_ID,
+  PAGE_ERROR_CONTAINER_ID,
+  TOASTS_WRAPPER_ID,
+  NAVIGATE_BACK_QUERY,
+  LOGOUT_CONTROLS_QUERY,
+  SCROLL_TO_QUERY,
+  FORM_ERROR_CONTAINER_QUERY,
+  FORM_ERROR_CLASSNAME,
+  INVALID_FIELD_CLASSNAME,
+} from './constants';
 
 function showToasts() {
   var toastElList = [].slice.call(document.querySelectorAll('.toast'));
@@ -35,7 +44,7 @@ export function showPageError(errorsList) {
  * @param {{name: string}} user
  */
 export function updateNavUser(user) {
-  const profileNavControl = document.getElementById('js-nav-profile');
+  const profileNavControl = document.getElementById(PROFILE_NAV_ID);
   if (!profileNavControl) {
     // no profile node
     return null;
@@ -54,7 +63,7 @@ export function updateNavUser(user) {
 }
 
 export function drawPageError(message) {
-  const pageErrorNode = document.getElementById('js-page-error');
+  const pageErrorNode = document.getElementById(PAGE_ERROR_CONTAINER_ID);
   if (!pageErrorNode) throw 'No page error node provided';
   pageErrorNode.innerHTML = alertTemplate({ type: 'danger', message: message });
 }
@@ -66,25 +75,27 @@ export function drawPageError(message) {
  */
 export function initApiErrorHandling(form, response, forceError) {
   if (!response) return null;
-  const formError = form.querySelector('.form-feedback.invalid-feedback');
+  const formErrorContainer = form.querySelector(FORM_ERROR_CONTAINER_QUERY);
 
   // clear existing errors
-  [...form.querySelectorAll('[name]')].forEach(input => input.classList.remove('is-invalid'));
+  [...form.querySelectorAll('[name]')].forEach(input =>
+    input.classList.remove(INVALID_FIELD_CLASSNAME)
+  );
   form.classList.remove('was-validated');
-  formError.classList.remove('d-block');
+  formErrorContainer.classList.remove('d-block');
 
   // if non field errors
   if (forceError || response.detail || response.non_field_errors) {
-    formError.innerHTML = parseApiErrors(response) || 'Something unexpected happened';
-    formError.classList.add('d-block');
+    formErrorContainer.innerHTML = parseApiErrors(response) || 'Something unexpected happened';
+    formErrorContainer.classList.add('d-block');
     return;
   }
 
   // handle fields errors
   Object.keys(response).forEach(field => {
     try {
-      form.querySelector(`[name=${field}] + .invalid-feedback`).innerHTML = response[field];
-      form.querySelector(`[name=${field}]`).classList.add('is-invalid');
+      form.querySelector(`[name=${field}] + .${FORM_ERROR_CLASSNAME}`).innerHTML = response[field];
+      form.querySelector(`[name=${field}]`).classList.add(INVALID_FIELD_CLASSNAME);
     } catch (e) {
       // pass
     }
@@ -95,8 +106,6 @@ export function initApiErrorHandling(form, response, forceError) {
 
 /** Init navigate back buttons binds */
 export const initNavigateBackBinds = () => {
-  const NAVIGATE_BACK_QUERY = '.js-go-back';
-
   [...document.querySelectorAll(NAVIGATE_BACK_QUERY)].forEach(item => {
     item.addEventListener('click', handleGoBack);
   });
@@ -104,8 +113,6 @@ export const initNavigateBackBinds = () => {
 
 /** Init navigate back buttons binds */
 export const initLogoutBinds = () => {
-  const LOGOUT_CONTROLS_QUERY = '.js-logout';
-
   [...document.querySelectorAll(LOGOUT_CONTROLS_QUERY)].forEach(item => {
     item.addEventListener('click', handleLogout);
   });
@@ -113,8 +120,6 @@ export const initLogoutBinds = () => {
 
 /** Init scroll to buttons binds */
 export const initScrollToBinds = () => {
-  const SCROLL_TO_QUERY = '.js-scroll-to';
-
   [...document.querySelectorAll(SCROLL_TO_QUERY)].forEach(item => {
     const scrollTarget = item.dataset.target;
     if (!scrollTarget) throw 'no scroll target';
