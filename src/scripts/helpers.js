@@ -3,6 +3,15 @@
 import Axios from 'axios';
 import jwt_decode from 'jwt-decode';
 
+import {
+  FORM_ERROR_CLASSNAME,
+  FORM_ERROR_CONTAINER_QUERY,
+  FORM_VALIDATION_STATE_CLASSNAME,
+  INVALID_FIELD_CLASSNAME,
+} from './constants';
+
+import processingTemplate from '../templates/typo/processing.hbs';
+
 // ---------- BROWSER HELPERS
 
 /** Go back in browser history */
@@ -126,6 +135,17 @@ export function searchCity(value) {
 
 // ---------- HELPER CLASSES
 
+/** Logger */
+export class Logger {
+  static error(text) {
+    console.error(text);
+  }
+  static log(text) {
+    // eslint-disable-next-line no-console
+    console.log(text);
+  }
+}
+
 /** Manage Node state
  * @exports
  * @class TemplateManager
@@ -153,5 +173,145 @@ export class TemplateManager {
   /** Restores initial content to current element */
   restore() {
     this.element.innerHTML = this.initialState;
+  }
+}
+
+/** Manage Form state
+ * @exports
+ * @class FormManager
+ */
+export class FormManager {
+  /** Init form manager by ID
+   * @param {string} formId
+   */
+  constructor(formId) {
+    this.formId = formId;
+    this.form = document.getElementById(formId);
+  }
+
+  /** Set submit event handler
+   * @param {() => Promise} submitHandler
+   * @param {{
+   * disableValidation?: boolean
+   * loadingText?: string
+   * }} options
+   */
+  setHandler(submitHandler, options = {}) {
+    const that = this;
+    this.form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // clear previous errors
+      this.classList.remove(FORM_VALIDATION_STATE_CLASSNAME);
+      [...this.querySelectorAll('[name]')].forEach(
+        input => input && input.classList.remove(INVALID_FIELD_CLASSNAME)
+      );
+      const formErrorContainer = this.querySelector(FORM_ERROR_CONTAINER_QUERY);
+      formErrorContainer && formErrorContainer.classList.remove('d-block');
+
+      // bootstrap validate html5 form
+      if (!options.disableValidation)
+        if (!this.checkValidity()) {
+          this.classList.add(FORM_VALIDATION_STATE_CLASSNAME);
+          return;
+        }
+
+      const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
+      submitButtonTemplate.change(processingTemplate({ text: options.loadingText || 'Loading' }));
+
+      const submitHandlerResult = submitHandler.apply(this, arguments);
+
+      if (!submitHandlerResult) {
+        Logger.log(`submitHandlerResult for ${that.formId} is null`);
+        return submitButtonTemplate.restore();
+      }
+
+      submitHandlerResult
+        .catch(error => {
+          if (typeof error === 'string') {
+            Logger.error(error);
+            return that.showFormError(error);
+          }
+
+          const response = error.response && error.response.data;
+
+          // check is error from API
+          if (response) {
+            Logger.error(JSON.stringify(response));
+
+            // if non field errors
+            if (response.detail || response.non_field_errors) {
+              const errorsList = response.non_field_errors || [''];
+              return that.showFormError(response.detail || errorsList.join('\n'));
+            }
+
+            // handle fields errors
+            const unknowFieldErrors = [];
+            Object.keys(response).forEach(field => {
+              try {
+                that.showFieldError(field, response[field]);
+              } catch (e) {
+                unknowFieldErrors.push(`${field}: ${response[field]}`);
+              }
+            });
+
+            if (unknowFieldErrors.length > 0) {
+              that.showFormError(unknowFieldErrors.join('\n'));
+            }
+          } else {
+            // js evaluation error
+            const rawError = JSON.stringify(error);
+            Logger.error(rawError);
+            that.showFormError(rawError);
+          }
+        })
+        .finally(() => {
+          submitButtonTemplate.restore();
+        });
+    });
+  }
+
+  /** Display field error
+   * @param {string} fieldName
+   * @param {string?} errorText
+   */
+  showFieldError(fieldName, errorText) {
+    if (errorText) {
+      const fieldErrorTextNode = this.form.querySelector(
+        `[name=${fieldName}] + .${FORM_ERROR_CLASSNAME}`
+      );
+      if (fieldErrorTextNode) {
+        fieldErrorTextNode.innerHTML = errorText;
+      } else {
+        throw 'no field error container for' + fieldName;
+      }
+    }
+
+    this.form.querySelector(`[name=${fieldName}]`).classList.add(INVALID_FIELD_CLASSNAME);
+  }
+
+  /** Display form error
+   * @param {string?} errorText
+   */
+  showFormError(errorText) {
+    const formErorr = this.form.querySelector(FORM_ERROR_CONTAINER_QUERY);
+    if (!formErorr) throw 'no form error container for #' + this.formId;
+    if (errorText) {
+      formErorr.innerHTML = errorText;
+    }
+
+    formErorr.classList.add('d-block');
+  }
+
+  /** Get form values as object */
+  getValues() {
+    const formData = new FormData(this.form);
+    return formDataToObj(formData);
+  }
+
+  /** Get form values as FormData */
+  getFormData() {
+    const formData = new FormData(this.form);
+    return formData;
   }
 }

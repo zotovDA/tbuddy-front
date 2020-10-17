@@ -24,3 +24,4 @@ export const PAGE_ERROR_CONTAINER_ID = 'js-page-error';
 export const FORM_ERROR_CONTAINER_QUERY = '.form-feedback.invalid-feedback';
 export const FORM_ERROR_CLASSNAME = 'invalid-feedback';
 export const INVALID_FIELD_CLASSNAME = 'is-invalid';
+export const FORM_VALIDATION_STATE_CLASSNAME = 'was-validated';
