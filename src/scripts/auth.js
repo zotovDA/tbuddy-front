@@ -1,5 +1,4 @@
-import { updateNavUser, showPageError } from './view';
-import { initLogoutBinds } from './binds';
+import { updateNavUser, showPageError, initLogoutBinds } from './view';
 import Axios from 'axios';
 
 export function restoreUserSession() {
