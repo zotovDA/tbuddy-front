@@ -304,6 +304,7 @@ function handleCreateRequest(manager) {
   });
 }
 
+/** Buddy apply for request */
 function handleApplyForRequest() {
   const targetId = this.dataset['request'];
   const price = this.dataset['price'];
@@ -332,6 +333,7 @@ function handleApplyForRequest() {
     });
 }
 
+/** Traveler close solved request */
 function handleSolveForRequest() {
   const targetId = this.dataset['request'];
 
@@ -367,6 +369,7 @@ function handleSolveForRequest() {
     });
 }
 
+/** Traveler fetch buddy candeidates for reqeust */
 function handleShowBuddyCandidatesForRequest() {
   const requestId = this.dataset.requestId;
   const buddiesCandidatesModal = new Modal(document.getElementById('chooseBuddy'));
@@ -428,6 +431,7 @@ function handleShowBuddyCandidatesForRequest() {
     });
 }
 
+/** Traveler choose buddy for request */
 function handleChooseBuddyForRequest(targetId, name, contacts) {
   document.querySelector(
     `#user-requests .request-item[data-id='${targetId}'] .card-footer`
@@ -456,6 +460,7 @@ function handleChooseBuddyForRequest(targetId, name, contacts) {
     .classList.remove('d-none');
 }
 
+/** Traveler cancel request */
 function handleCancelRequest() {
   const requestId = this.dataset.requestId;
 
@@ -463,10 +468,14 @@ function handleCancelRequest() {
     status: 3, // cancel request
   })
     .then(() => {
+      // remove cancel button
+      this.classList.add('d-none');
+
       const request = document.querySelector(`.request-item[data-id="${requestId}"]`);
+      const requestHeader = request.querySelector('.card-header');
       request.querySelector(`.${OPEN_REQUEST_BADGE_CLASSNAME}`).classList.add('d-none');
-      request.querySelector('.card-header').classList.remove('bg-primary');
-      request.querySelector('.card-header').classList.add('bg-dark');
+      requestHeader.classList.remove('bg-primary');
+      requestHeader.classList.add('bg-dark');
     })
     .catch(error => {
       showPageError([
