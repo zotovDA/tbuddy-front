@@ -2,12 +2,14 @@
 
 import Axios from 'axios';
 import jwt_decode from 'jwt-decode';
+import moment from 'moment';
 
 import {
   FORM_ERROR_CLASSNAME,
   FORM_ERROR_CONTAINER_QUERY,
   FORM_VALIDATION_STATE_CLASSNAME,
   INVALID_FIELD_CLASSNAME,
+  momentDateFormat,
 } from './constants';
 
 import processingTemplate from '../templates/typo/processing.hbs';
@@ -107,13 +109,32 @@ export function parsePrice(price) {
 
 /** Parse different formats of django api errors into single string
  * @see {@link https://www.django-rest-framework.org/api-guide/exceptions/#exception-handling-in-rest-framework-views} for error format docs
- * @param {any} error
+ * @param {any} responseData
+ * @returns {string}
  */
-export function parseApiErrors(error) {
-  if (!error) return '';
+export function parseApiErrors(responseData) {
+  if (!responseData) return '';
 
-  const errorsList = error.non_field_errors || [''];
-  return error.detail || errorsList.join('\n');
+  const rawError = JSON.stringify(responseData);
+  Logger.error(rawError);
+
+  // if non field errors
+  if (responseData.detail || responseData.non_field_errors) {
+    const errorsList = responseData.non_field_errors || [''];
+    return responseData.detail || errorsList.join('\n');
+  }
+
+  // handle fields errors
+  const unknowFieldErrors = [];
+  Object.keys(responseData).forEach(field => {
+    unknowFieldErrors.push(`${field}: ${responseData[field]}`);
+  });
+
+  if (unknowFieldErrors.length > 0) {
+    return unknowFieldErrors.join('\n');
+  }
+
+  return rawError;
 }
 
 /** Fetch cities list from Api
@@ -131,6 +152,132 @@ export function searchCity(value) {
     .catch(() => {
       return [];
     });
+}
+
+// ---------- API MODELS
+
+/** User model
+ * @typedef {Object} userModel
+ * @property {boolean} isVerified
+ * @property {boolean} isProfileCreated
+ * @property {boolean} isBuddy
+ * traveler fields:
+ * @property {string} firstname
+ * @property {string} surname
+ * @property {string} gender
+ * @property {string} dob
+ * @property {number} age
+ * @property {string} photo
+ * @property {string} bio
+ * buddy fields:
+ * @property {string[]} activities
+ * @property {string} place city display name
+ * @property {number} city city id
+ * @property {string} contacts
+ */
+
+const initialUser = {
+  firstname: '',
+  surname: '',
+  gender: '',
+  dob: '',
+  age: '',
+  bio: '',
+  photo: '',
+  place: '',
+  city: '',
+  activities: [],
+  contacts: '',
+
+  isBuddy: false,
+  isVerified: false,
+  isProfileCreated: false,
+};
+
+/** Format api user to user
+ * @param {any} data
+ * @returns {userModel}
+ */
+export function formatUser(data) {
+  try {
+    const userData = {
+      firstname: data.first_name,
+      surname: data.last_name,
+      gender: data.gender,
+      dob: moment(data.dob, 'YYYY-MM-DD').format(momentDateFormat),
+      age: moment().diff(moment(data.dob, momentDateFormat), 'years'),
+      bio: data.bio,
+      photo: data.image,
+      place: data.city && data.city.display_name,
+      city: data.city && data.city.id,
+      activities: data.activities && data.activities.map(activity => activity.type),
+      contacts: data.contacts,
+
+      isBuddy: data.is_buddy,
+      isVerified: data.user && data.user.is_email_verified,
+      isProfileCreated: data.is_manual,
+    };
+    return userData;
+  } catch (error) {
+    Logger.error(error);
+    return initialUser;
+  }
+}
+
+/** Request model
+ * @typedef {Object} requestModel
+ * @property {number} id
+ * @property {boolean} isOpen
+ * @property {boolean} isProgress
+ * @property {boolean} isCanceled
+ * @property {boolean} isDone
+ *
+ * @property {string} name
+ * @property {number} price
+ * @property {string} description
+ * @property {string[]} activities
+ *
+ * @property {string} location
+ * @property {string} dateFrom
+ * @property {string} dateTo
+ *
+ * @property {number} buddiesCount
+ * @property {{id: number, name: string, contacts: string}} buddy
+ */
+
+/** Format request from api to requestModel
+ * @param {any} request
+ * @returns {requestModel}
+ */
+export function formatRequest(request) {
+  try {
+    // TODO: add isApplied if user applied
+    const formattedClaim = {
+      id: request.id,
+      isOpen: request.status === 0,
+      isProgress: request.status === 1,
+      isCanceled: request.status === 3,
+      isDone: request.status === 2,
+      name: request.applicant_profile.first_name,
+      price: parseInt(request.price),
+      description: request.details,
+      activities: (request.activities || []).map(activity => activity.type),
+      location: request.city.display_name,
+      dateFrom: moment(request.begins_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
+      dateTo: moment(request.ends_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
+      buddy:
+        (request.candidate_accepted && {
+          id: request.candidate_accepted.id,
+          name: request.candidate_accepted.respondent_profile.first_name,
+          contacts: request.candidate_accepted.respondent_profile.contacts,
+        }) ||
+        undefined,
+      buddiesCount: request.candidate_count || 0,
+    };
+    return formattedClaim;
+  } catch (error) {
+    return {};
+  }
 }
 
 // ---------- HELPER CLASSES
@@ -183,20 +330,28 @@ export class TemplateManager {
 export class FormManager {
   /** Init form manager by ID
    * @param {string} formId
+   * @param {Function?} onFormReady actions to be done aftre form init
    */
-  constructor(formId) {
+  constructor(formId, onFormReady = () => {}) {
     this.formId = formId;
     this.form = document.getElementById(formId);
+    this.formTemplateManager = new TemplateManager(this.form);
+    this.onFormReady = onFormReady;
+    onFormReady();
   }
 
   /** Set submit event handler
-   * @param {() => Promise} submitHandler
+   * @param {(manager: this, formObj: element) => Promise} submitHandler
    * @param {{
    * disableValidation?: boolean
    * loadingText?: string
    * }} options
    */
   setHandler(submitHandler, options = {}) {
+    // save passed params for future
+    this.userSubmitHandler = submitHandler;
+    this.userOptions = options;
+
     const that = this;
     this.form.addEventListener('submit', function(e) {
       e.preventDefault();
@@ -219,7 +374,7 @@ export class FormManager {
       const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
       submitButtonTemplate.change(processingTemplate({ text: options.loadingText || 'Loading' }));
 
-      const submitHandlerResult = submitHandler.apply(this, arguments);
+      const submitHandlerResult = submitHandler.call(this, that);
 
       if (!submitHandlerResult) {
         Logger.log(`submitHandlerResult for ${that.formId} is null`);
@@ -313,5 +468,59 @@ export class FormManager {
   getFormData() {
     const formData = new FormData(this.form);
     return formData;
+  }
+
+  /** Change form outerHTML to new template
+   * @param {string} newTemplate
+   */
+  changeTemplate(newTemplate) {
+    this.formTemplateManager.change(newTemplate);
+  }
+
+  /** Restore form to original state */
+  restoreForm() {
+    this.formTemplateManager.restore();
+    this.onFormReady();
+  }
+}
+
+/** Manage User state */
+export class User {
+  constructor() {
+    // initial user info
+    this.user = initialUser;
+  }
+
+  /** Get user data
+   * @returns {userModel}
+   */
+  getData() {
+    return this.user;
+  }
+
+  /** Update user data
+   * @param {userModel} newData
+   */
+  setData(newData) {
+    this.user = {
+      ...this.user,
+      ...newData,
+    };
+  }
+
+  isBuddy() {
+    return this.user.isBuddy;
+  }
+
+  isNotConfirmedBuddy() {
+    return this.isBuddy() && this.user.place;
+  }
+
+  isVerified() {
+    return this.user.isVerified;
+  }
+
+  hasProfile() {
+    return this.user.isProfileCreated;
   }
 }

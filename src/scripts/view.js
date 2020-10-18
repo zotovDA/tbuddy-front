@@ -1,13 +1,17 @@
 // Helpers that manipulates DOM
 
 import Toast from 'bootstrap/js/dist/toast';
+import moment from 'moment';
+import IMask from 'imask';
+import Choices from 'choices.js';
+import 'choices.js/public/assets/styles/choices.min.css';
 
 import unauthorizedTemplate from '../templates/header/_unauthorized.hbs';
 import authorizedTemplate from '../templates/header/_authorized.hbs';
 import toastTemplate from '../templates/pageToast.hbs';
 
 import alertTemplate from '../templates/alert.hbs';
-import { handleGoBack, parseApiErrors } from './helpers';
+import { debounce, handleGoBack, searchCity } from './helpers';
 import { handleLogout } from './auth';
 import animateScrollTo from 'animated-scroll-to';
 import {
@@ -17,10 +21,9 @@ import {
   NAVIGATE_BACK_QUERY,
   LOGOUT_CONTROLS_QUERY,
   SCROLL_TO_QUERY,
-  FORM_ERROR_CONTAINER_QUERY,
-  FORM_ERROR_CLASSNAME,
-  INVALID_FIELD_CLASSNAME,
 } from './constants';
+
+// ---------- View HELPERS
 
 function showToasts() {
   var toastElList = [].slice.call(document.querySelectorAll('.toast'));
@@ -68,41 +71,92 @@ export function drawPageError(message) {
   pageErrorNode.innerHTML = alertTemplate({ type: 'danger', message: message });
 }
 
-/** Handle validation in bootstrap form
- * @param {Element} form
- * @param {any} response
- * @param {boolean} forceError
+const momentDateFormat = 'DD.MM.YYYY';
+/** Init Date of Birth input with IMask
+ * @param {string} elementQuery
  */
-export function initApiErrorHandling(form, response, forceError) {
-  if (!response) return null;
-  const formErrorContainer = form.querySelector(FORM_ERROR_CONTAINER_QUERY);
+export function initDoBInput(elementQuery) {
+  const currentYear = moment().get('year');
+  IMask(document.querySelector(elementQuery), {
+    mask: Date,
+    pattern: momentDateFormat,
+    min: new Date(currentYear - 100, 0, 1),
+    max: new Date(currentYear - 17, 0, 1),
 
-  // clear existing errors
-  [...form.querySelectorAll('[name]')].forEach(input =>
-    input.classList.remove(INVALID_FIELD_CLASSNAME)
-  );
-  form.classList.remove('was-validated');
-  formErrorContainer.classList.remove('d-block');
+    format: function(date) {
+      return moment(date).format(momentDateFormat);
+    },
+    parse: function(str) {
+      return moment(str, momentDateFormat);
+    },
 
-  // if non field errors
-  if (forceError || response.detail || response.non_field_errors) {
-    formErrorContainer.innerHTML = parseApiErrors(response) || 'Something unexpected happened';
-    formErrorContainer.classList.add('d-block');
-    return;
-  }
-
-  // handle fields errors
-  Object.keys(response).forEach(field => {
-    try {
-      form.querySelector(`[name=${field}] + .${FORM_ERROR_CLASSNAME}`).innerHTML = response[field];
-      form.querySelector(`[name=${field}]`).classList.add(INVALID_FIELD_CLASSNAME);
-    } catch (e) {
-      // pass
-    }
+    blocks: {
+      YYYY: {
+        mask: IMask.MaskedRange,
+        from: currentYear - 100,
+        to: currentYear - 17,
+      },
+      MM: {
+        mask: IMask.MaskedRange,
+        from: 1,
+        to: 12,
+      },
+      DD: {
+        mask: IMask.MaskedRange,
+        from: 1,
+        to: 31,
+      },
+    },
   });
 }
 
-// BINDS on DOM
+/** Init city input with fetching from Api
+ * @param {string} elementId
+ * @param {{ value: number, label: string }} initialCity
+ */
+export function initCitySearchInput(elementId, initialCity, onChangeCallback) {
+  const citySelect = document.getElementById(elementId);
+  const choices = new Choices(citySelect, {
+    noChoicesText: 'No cities found',
+    duplicateItemsAllowed: false,
+    searchChoices: false,
+    shouldSort: false,
+  });
+
+  if (initialCity) {
+    choices.setValue([
+      {
+        value: initialCity.value,
+        label: initialCity.label,
+      },
+    ]);
+  }
+
+  if (onChangeCallback) {
+    citySelect.addEventListener('choice', onChangeCallback);
+  }
+
+  citySelect.addEventListener(
+    'search',
+    debounce(function({ detail }) {
+      const value = detail.value;
+      if (!value || value.length < 2) {
+        return;
+      }
+
+      searchCity(value).then(citiesList => {
+        choices.setChoices(
+          citiesList.map(city => ({ value: city.id, label: city.display_name })),
+          'value',
+          'label',
+          true
+        );
+      });
+    }, 500)
+  );
+}
+
+// ---------- BINDS
 
 /** Init navigate back buttons binds */
 export const initNavigateBackBinds = () => {
@@ -127,3 +181,15 @@ export const initScrollToBinds = () => {
     item.addEventListener('click', () => animateScrollTo(document.getElementById(scrollTarget)));
   });
 };
+
+// ---------- HELPER CLASSES
+
+/** Manage request element state */
+export class RequestNode {
+  /** Init request with single element query
+   * @param {string} requestQuery
+   */
+  constructor(requestQuery) {
+    this.request = document.querySelector(requestQuery);
+  }
+}

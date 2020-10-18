@@ -9,6 +9,8 @@ export const requestsCategories = [
   'shopping',
 ];
 
+export const momentDateFormat = 'DD.MM.YYYY';
+
 // Actions anchors
 
 export const PROFILE_NAV_ID = 'js-nav-profile';

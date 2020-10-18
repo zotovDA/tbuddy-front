@@ -136,13 +136,14 @@
         </div>
         <div class="row">
           <div class="col-lg-6 mx-auto js-subscription-wrapper">
-            <form novalidate method="POST" action="subscribeHandle.php"
-              class="js-subscription-form subscription-form mt-5">
+            <form id="js-subscription-form" novalidate method="POST" action="subscribeHandle.php"
+              class="subscription-form mt-5">
               <div class="form-group">
                 <input required type="email" name="email" placeholder="name@company.com" class="form-control">
                 <div class="invalid-feedback">
                   Please provide a valid email.
                 </div>
+                <div class="form-feedback invalid-feedback"></div>
                 <div class="js-subscription-button">
                   <button type="submit" class="btn btn-primary">Get Started</button>
                 </div>
