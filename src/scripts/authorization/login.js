@@ -1,23 +1,20 @@
 import '../common';
-import { formDataToObj, TemplateManager, initApiErrorHandling, getUserFromToken } from '../helpers';
-import processingTemplate from '../../templates/typo/processing.hbs';
+import { getUserFromToken, FormManager, delay } from '../helpers';
 import Axios from 'axios';
 import { saveUserSessionToStore } from '../auth';
 
 document.addEventListener('DOMContentLoaded', function() {
-  const signInForm = document.getElementById('js-sign-in-form');
-  const signUpForm = document.getElementById('js-sign-up-form');
+  const signInFormManager = new FormManager('js-sign-in-form');
+  signInFormManager.setHandler(handleLocalSignIn, { loadingText: 'Signing in' });
 
-  signInForm.addEventListener('submit', handleLocalSignIn);
-  signUpForm.addEventListener('submit', handleLocalSignUp);
-});
+  const signUpFormManager = new FormManager('js-sign-up-form');
+  signUpFormManager.setHandler(handleLocalSignUp, { loadingText: 'Signing up' });
 
-function obtainToken(email, password) {
-  return Axios.post('/auth/token/obtain/local/', {
-    email: email,
-    password: password,
-  })
-    .then(response => {
+  function obtainToken(email, password) {
+    return Axios.post('/auth/token/obtain/local/', {
+      email: email,
+      password: password,
+    }).then(response => {
       const userSession = response.data;
       const userData = getUserFromToken(userSession.access);
 
@@ -27,68 +24,33 @@ function obtainToken(email, password) {
         name: userData.name,
         id: userData.id,
       });
-    })
-    .then(() => {
-      window.location = '/?authed';
+      // localstorage need time to write
+      return delay(100).then(() => (window.location = '/?authed'));
     });
-}
-
-/** @param {Event} e */
-function handleLocalSignIn(e) {
-  e.preventDefault();
-  this.classList.remove('was-validated');
-  if (!this.checkValidity()) {
-    this.classList.add('was-validated');
-    return;
   }
 
-  const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
-  submitButtonTemplate.change(processingTemplate({ text: 'Signing in' }));
-
-  const formData = new FormData(this);
-  const authData = formDataToObj(formData);
-
-  obtainToken(authData.email, authData.password).catch(error => {
-    initApiErrorHandling(e.target, error.response.data);
-    submitButtonTemplate.restore();
-  });
-}
-
-/** @param {Event} e */
-function handleLocalSignUp(e) {
-  e.preventDefault();
-  this.classList.remove('was-validated');
-  if (!this.checkValidity()) {
-    this.classList.add('was-validated');
-    return;
+  function handleLocalSignIn() {
+    const authData = signInFormManager.getValues();
+    return obtainToken(authData.email, authData.password);
   }
 
-  const formData = new FormData(this);
-  const authData = formDataToObj(formData);
+  function handleLocalSignUp() {
+    const authData = signUpFormManager.getValues();
 
-  if (authData['password'] !== authData['password-repeat']) {
-    this.querySelector('[name=password-repeat]').classList.add('is-invalid');
-    return;
-  } else {
-    this.querySelector('[name=password-repeat]').classList.remove('is-invalid');
-  }
+    if (authData['password'] !== authData['password-repeat']) {
+      signUpFormManager.showFieldError('password-repeat');
+      return;
+    }
 
-  const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
-  submitButtonTemplate.change(processingTemplate({ text: 'Signing up' }));
-
-  Axios.post('/auth/user/', {
-    email: authData.email,
-    password: authData.password,
-  })
-    .then(() => {
+    return Axios.post('/auth/user/', {
+      email: authData.email,
+      password: authData.password,
+    }).then(() => {
       // verify alert will be in profile
       Axios.post('/auth/email/verify/', {
         email: authData.email,
       });
       return obtainToken(authData.email, authData.password);
-    })
-    .catch(error => {
-      initApiErrorHandling(e.target, error.response.data);
-      submitButtonTemplate.restore();
     });
-}
+  }
+});

@@ -3,14 +3,20 @@ import '../../stylesheets/requests.scss';
 import IMask from 'imask';
 import { Modal } from 'bootstrap';
 import 'choices.js/public/assets/styles/choices.min.css';
-import Choices from 'choices.js';
 import moment from 'moment';
-import { debounce, formatPrice, formDataToObj, searchCity, TemplateManager } from '../helpers';
+import {
+  parsePrice,
+  TemplateManager,
+  User,
+  formatUser,
+  formatRequest,
+  FormManager,
+  parseApiErrors,
+} from '../helpers';
 
 import { requestsCategories } from '../constants';
 
 // templates
-import processingTemplate from '../../templates/typo/processing.hbs';
 import unauthorizedTemplate from '../../templates/requests/_unauthorized.hbs';
 import createRequest from '../../templates/requests/create.hbs';
 import createRequestSuccess from '../../templates/requests/_createSuccess.hbs';
@@ -20,99 +26,86 @@ import requestBuddy from '../../templates/requests/_requestBuddy.hbs';
 import buddyCandidates from '../../templates/requests/_buddyCandidates.hbs';
 import { getCurrentUserId } from '../auth';
 import Axios from 'axios';
-import { showPageError } from '../view';
+import { initCitySearchInput, showPageError } from '../view';
 
-/** @type {{id: number, firstname: string, location:string}} */
-let currentUser = {
-  id: getCurrentUserId(),
-};
+// DOM ANCHORS
+const CREATE_REQUEST_FORM_ID = 'create-request-form';
 
+const USER_REQUESTS_CONTAINER_ID = 'user-requests';
+const BUDDY_REQUESTS_CONTAINER_ID = 'buddy-requests';
+
+const REQUESTS_CONTAINER_CLASSNAME = 'js-requests-list-container';
+const REQUESTS_LIST_CLASSNAME = 'js-requests-list';
+
+// badges
+const OPEN_REQUEST_BADGE_CLASSNAME = 'js-open-badge';
+const PROGRESS_REQUEST_BADGE_CLASSNAME = 'js-progress-badge';
+const APPLIED_REQUEST_BADGE_CLASSNAME = 'js-apply-badge';
+// buddy
+const APPLY_REQUEST_BUTTON_CLASSNAME = 'js-apply-button';
+const SUCCESS_APPLY_MODAL_ID = 'applySuccess';
+// user
+const SOLVE_BUTTON_CLASSNAME = 'js-solve-button';
+const SHOW_CANDIDATES_BUTTON_CLASSNAME = 'js-show-buddy-candidates';
+const CANCEL_REQUEST_BUTTON_CLASSNAME = 'js-cancel-request';
+// service
+const SCROLL_TO_REQUESTS_BUTTON_ID = 'to-user-requests';
+const BUDDY_CITY_LABEL_ID = 'buddy-city';
+const CREATE_MORE_BUTTON_ID = 'request-create-more';
+
+const user = new User();
+
+/** @type {{ place: string, cityId: number }} */
 let lastLocation;
 let lastDateFrom;
 let lastDateTo;
-/** @type {Element} */
+/** @type {TemplateManager} */
 let bannerContainer;
 
 let userRequests = [];
 
 // CHECK IF USER IS FIRST TIME VISITER
 if (!localStorage.getItem('COVID_TEST_PASSED')) {
-  window.location = '/about.html';
   localStorage.setItem('COVID_TEST_PASSED', 'true');
+  window.location = '/about.html';
 }
 
 document.addEventListener('init', async function() {
-  bannerContainer = document.getElementById('banner-container');
+  bannerContainer = new TemplateManager(document.getElementById('banner-container'));
 
-  let isBuddy = false;
-  const isAuth = !!currentUser.id;
-  let isVerified = false;
-  let isProfileCreated = false;
-
-  // FIXME: isAuth is true when user session expired
-  if (!isAuth) {
-    bannerContainer.innerHTML = unauthorizedTemplate();
+  const userId = getCurrentUserId();
+  if (!userId) {
+    bannerContainer.change(unauthorizedTemplate());
     return;
   } else {
-    await Axios.get(`/profiles/${currentUser.id}/`)
+    await Axios.get(`/profiles/${userId}/`)
       .then(response => {
         const userData = response.data;
-        currentUser.firstname = userData.first_name;
-        currentUser.location = userData.city && userData.city.display_name;
-
-        isBuddy = userData.is_buddy;
-        isVerified = userData.user.is_email_verified;
-        isProfileCreated = userData.is_manual;
+        user.setData(formatUser(userData));
       })
       .catch(() => {
-        bannerContainer.innerHTML = unauthorizedTemplate();
+        bannerContainer.change(unauthorizedTemplate());
         return;
       });
   }
-  if (!isVerified) {
+  if (!user.isVerified()) {
     document.getElementById('email-verify').classList.remove('d-none');
     return;
   }
-  if (!isProfileCreated) {
+  if (!user.hasProfile()) {
     document.getElementById('profile-create').classList.remove('d-none');
     return;
   }
 
-  function _formatClaim(request) {
-    // TODO: add isApplied if user applied
-    const formattedClaim = {
-      id: request.id,
-      isOpen: request.status === 0,
-      isProgress: request.status === 1,
-      isCanceled: request.status === 3,
-      isDone: request.status === 2,
-      name: request.applicant_profile.first_name,
-      price: parseInt(request.price),
-      description: request.details,
-      activities: (request.activities || []).map(activity => activity.type),
-      location: request.city.display_name,
-      dateFrom: moment(request.begins_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
-      dateTo: moment(request.ends_at, 'YYYY-MM-DD').format('DD.MM.YYYY'),
-      buddy:
-        (request.candidate_accepted && {
-          id: request.candidate_accepted.id,
-          name: request.candidate_accepted.respondent_profile.first_name,
-          contacts: request.candidate_accepted.respondent_profile.contacts,
-        }) ||
-        undefined,
-      buddiesCount: request.candidate_count || 0,
-    };
-
-    return formattedClaim;
-  }
-
+  // if user is all right
   drawCreateRequest();
+
   // TODO: add pagination
   Axios.get(`/claims/`, { params: { limit: 100 } })
     .then(response => {
       const data = response.data;
       data.results.forEach(request => {
-        userRequests.push(_formatClaim(request));
+        userRequests.push(formatRequest(request));
       });
 
       if (userRequests.length) {
@@ -123,19 +116,19 @@ document.addEventListener('init', async function() {
       showPageError([
         {
           title: 'Getting claims error',
-          message: error.response.data && error.response.data.detail,
+          message: parseApiErrors(error.response.data),
         },
       ]);
       return;
     });
-  if (isBuddy) {
+  if (user.isBuddy()) {
     // TODO: add pagination
     Axios.get(`/claims/buddy/`, { params: { limit: 100 } })
       .then(response => {
         const data = response.data;
         let buddyRequests = [];
         data.results.forEach(request => {
-          buddyRequests.push(_formatClaim(request));
+          buddyRequests.push(formatRequest(request));
         });
 
         if (buddyRequests.length) {
@@ -146,7 +139,7 @@ document.addEventListener('init', async function() {
         showPageError([
           {
             title: 'Getting claims for buddy error',
-            message: error.response.data && error.response.data.detail,
+            message: parseApiErrors(error.response.data),
           },
         ]);
         return;
@@ -155,123 +148,106 @@ document.addEventListener('init', async function() {
 });
 
 function drawCreateRequest() {
-  bannerContainer.innerHTML = createRequest({
-    categories: requestsCategories,
-    dateFrom: lastDateFrom,
-    dateTo: lastDateTo,
-  });
-  document.getElementById('create-request-form').addEventListener('submit', handleCreateRequest);
-  // TODO: add calendar range
-
-  // Binds
-  const citySelect = document.querySelector('[name=city]');
-  // TODO: refactor dublicate in profile/index.js
-  const choices = new Choices(citySelect, {
-    noChoicesText: 'No cities found',
-    duplicateItemsAllowed: false,
-    searchChoices: false,
-    shouldSort: false,
-  });
-  if (lastLocation) {
-    choices.setValue([
-      {
-        value: lastLocation.cityId,
-        label: lastLocation.place,
-      },
-    ]);
-  }
-  citySelect.addEventListener('choice', function(choice) {
-    lastLocation = {
-      place: choice.detail.choice.label,
-      cityId: choice.detail.choice.value,
-    };
-  });
-  citySelect.addEventListener(
-    'search',
-    debounce(function({ detail }) {
-      const value = detail.value;
-      if (!value || value.length < 2) {
-        return;
-      }
-
-      searchCity(value).then(citiesList => {
-        choices.setChoices(
-          citiesList.map(city => ({ value: city.id, label: city.display_name })),
-          'value',
-          'label',
-          true
-        );
-      });
-    }, 500)
+  bannerContainer.change(
+    createRequest({
+      categories: requestsCategories,
+      dateFrom: lastDateFrom,
+      dateTo: lastDateTo,
+    })
   );
-  IMask(document.querySelector('[name=price]'), {
-    mask: '$num',
-    blocks: {
-      num: {
-        mask: Number,
-        thousandsSeparator: ' ',
+
+  const formManager = new FormManager(CREATE_REQUEST_FORM_ID, function() {
+    initCitySearchInput(
+      'request-city',
+      lastLocation ? { value: lastLocation.cityId, label: lastLocation.place } : undefined,
+      function(choice) {
+        lastLocation = {
+          place: choice.detail.choice.label,
+          cityId: choice.detail.choice.value,
+        };
+      }
+    );
+
+    // init mask fields
+    // TODO: add calendar range
+    IMask(document.querySelector('[name=price]'), {
+      mask: '$num',
+      blocks: {
+        num: {
+          mask: Number,
+          thousandsSeparator: ' ',
+        },
       },
-    },
+    });
+    const minDate = new Date();
+    minDate.setDate(minDate.getDate() - 1);
+    IMask(document.querySelector('[name=dateFrom]'), {
+      mask: Date,
+      min: minDate,
+    });
+    IMask(document.querySelector('[name=dateTo]'), {
+      mask: Date,
+      min: new Date(),
+    });
   });
-  const minDate = new Date();
-  minDate.setDate(minDate.getDate() - 1);
-  IMask(document.querySelector('[name=dateFrom]'), {
-    mask: Date,
-    min: minDate,
-  });
-  IMask(document.querySelector('[name=dateTo]'), {
-    mask: Date,
-    min: new Date(),
-  });
+  formManager.setHandler(handleCreateRequest);
 }
 
 function drawUserRequests(requests) {
-  document.getElementById('to-user-requests').classList.remove('d-none');
-  document.getElementById('user-requests').classList.remove('d-none');
-  document.getElementById('user-requests-list-container').innerHTML = requestsList({
+  const requestsContainer = document.getElementById(USER_REQUESTS_CONTAINER_ID);
+
+  document.getElementById(SCROLL_TO_REQUESTS_BUTTON_ID).classList.remove('d-none');
+  requestsContainer.classList.remove('d-none');
+
+  // fill requests
+  requestsContainer.getElementsByClassName(
+    REQUESTS_CONTAINER_CLASSNAME
+  )[0].innerHTML = requestsList({
     requests: requests,
   });
-  [...document.querySelectorAll('#user-requests .js-solve-button')].forEach(btn =>
+
+  // init binds
+  [...requestsContainer.getElementsByClassName(SOLVE_BUTTON_CLASSNAME)].forEach(btn =>
     btn.addEventListener('click', handleSolveForRequest)
   );
-  [...document.querySelectorAll('#user-requests .js-show-buddy-candidates')].forEach(btn =>
+  [...requestsContainer.getElementsByClassName(SHOW_CANDIDATES_BUTTON_CLASSNAME)].forEach(btn =>
     btn.addEventListener('click', handleShowBuddyCandidatesForRequest)
   );
-  [...document.querySelectorAll('#user-requests .js-cancel-request')].forEach(btn =>
+  [...requestsContainer.getElementsByClassName(CANCEL_REQUEST_BUTTON_CLASSNAME)].forEach(btn =>
     btn.addEventListener('click', handleCancelRequest)
   );
 }
 
 function drawBuddyRequests(requests) {
-  document.getElementById('buddy-city').innerHTML = currentUser.location;
-  document.getElementById('buddy-requests').classList.remove('d-none');
-  document.getElementById('buddy-requests-list-container').innerHTML = requestsList({
+  const requestsContainer = document.getElementById(BUDDY_REQUESTS_CONTAINER_ID);
+
+  document.getElementById(BUDDY_CITY_LABEL_ID).innerHTML = user.getData().place;
+  requestsContainer.classList.remove('d-none');
+
+  // fill requests
+  requestsContainer.getElementsByClassName(
+    REQUESTS_CONTAINER_CLASSNAME
+  )[0].innerHTML = requestsList({
     // TODO: forBuddy if not apply
     requests: requests.map(request => ({ ...request, forBuddy: true, isApplied: false })),
   });
-  [...document.querySelectorAll('#buddy-requests .request-item .js-apply-button')].forEach(btn =>
+
+  // init binds
+  [...requestsContainer.getElementsByClassName(APPLY_REQUEST_BUTTON_CLASSNAME)].forEach(btn =>
     btn.addEventListener('click', handleApplyForRequest)
   );
 }
 
-function handleCreateRequest(e) {
-  e.preventDefault();
-  this.classList.remove('was-validated');
-  if (!this.checkValidity()) {
-    this.classList.add('was-validated');
-    return;
-  }
-
-  const formData = new FormData(this);
-  const data = formDataToObj(formData);
+/** Handle form submit to Create request
+ * @param {FormManager} manager
+ */
+function handleCreateRequest(manager) {
+  const data = manager.getValues();
 
   lastDateFrom = data['dateFrom'];
   lastDateTo = data['dateTo'];
 
-  const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
-  submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
-
-  Axios.post('/claims/', {
+  return Axios.post('/claims/', {
     city_id: lastLocation.cityId,
     begins_at: moment(data['dateFrom'], 'DD.MM.YYYY')
       .hours(moment().get('hour'))
@@ -281,57 +257,54 @@ function handleCreateRequest(e) {
       .hours(23)
       .format(),
     details: data['description'],
-    price: formatPrice(data['price']),
+    price: parsePrice(data['price']),
     activities: data['activities']
       ? typeof data['activities'] === 'string'
         ? [{ type: data['activities'] }]
         : data['activities'].map(skill => ({ type: skill }))
       : [],
-  })
-    .then(response => {
-      const id = response.data && response.data.id;
-      bannerContainer.innerHTML = createRequestSuccess();
+  }).then(response => {
+    const id = response.data && response.data.id;
+    bannerContainer.change(createRequestSuccess());
 
-      if (!userRequests.length) {
-        drawUserRequests([]);
-      }
-      const requestsList = document.querySelector('#user-requests .js-user-requests-list');
-      const requestItemNode = document.createElement('div');
-      requestItemNode.className = 'col-lg-3 col-md-4 col-sm-6 col-12 mb-3';
-      requestItemNode.innerHTML = requestItem({
-        id: id || Math.random(),
-        isOpen: true,
-        isProgress: false,
-        isClosed: false,
-        name: currentUser.firstname,
-        dateFrom: data['dateFrom'],
-        dateTo: data['dateTo'],
-        activities:
-          typeof data['activities'] === 'string' ? [data['activities']] : data['activities'],
-        price: formatPrice(data['price']),
-        description: data['description'],
-        location: lastLocation.place,
-        buddiesCount: 0,
-      });
-      requestsList.prepend(requestItemNode);
-      document
-        .querySelector('#user-requests .js-cancel-request')
-        .addEventListener('click', handleCancelRequest);
+    if (!userRequests.length) {
+      drawUserRequests([]);
+    }
 
-      document.getElementById('request-create-more').addEventListener('click', drawCreateRequest);
-    })
-    .catch(error => {
-      // TODO: initApiErrorHandling
-      showPageError([
-        {
-          title: 'Getting claims for buddy error',
-          message: error.response.data && error.response.data.detail,
-        },
-      ]);
-      submitButtonTemplate.restore();
+    const requestsContainer = document.getElementById(USER_REQUESTS_CONTAINER_ID);
+    const requestsList = requestsContainer.getElementsByClassName(REQUESTS_LIST_CLASSNAME)[0];
+    // construct new request
+    const requestItemNode = document.createElement('div');
+    requestItemNode.className = 'col-lg-3 col-md-4 col-sm-6 col-12 mb-3';
+    requestItemNode.innerHTML = requestItem({
+      id: id || Math.random(),
+      isOpen: true,
+      isProgress: false,
+      isClosed: false,
+      name: user.getData().firstname,
+      dateFrom: data['dateFrom'],
+      dateTo: data['dateTo'],
+      activities:
+        typeof data['activities'] === 'string' ? [data['activities']] : data['activities'],
+      price: parsePrice(data['price']),
+      description: data['description'],
+      location: lastLocation.place,
+      buddiesCount: 0,
     });
+
+    // insert new request in DOM
+    requestsList.prepend(requestItemNode);
+    // init bind on current created element (must be first one)
+    requestsContainer
+      .getElementsByClassName(CANCEL_REQUEST_BUTTON_CLASSNAME)[0]
+      .addEventListener('click', handleCancelRequest);
+
+    // create more btn
+    document.getElementById(CREATE_MORE_BUTTON_ID).addEventListener('click', drawCreateRequest);
+  });
 }
 
+/** Buddy apply for request */
 function handleApplyForRequest() {
   const targetId = this.dataset['request'];
   const price = this.dataset['price'];
@@ -340,26 +313,27 @@ function handleApplyForRequest() {
     price: price,
   })
     .then(() => {
-      const successModal = new Modal(document.getElementById('applySuccess'));
+      const successModal = new Modal(document.getElementById(SUCCESS_APPLY_MODAL_ID));
       successModal.show();
       this.classList.add('d-none');
       document
-        .querySelector(`#buddy-requests .request-item[data-id='${targetId}'] .js-apply-badge`)
+        .querySelector(
+          `#${BUDDY_REQUESTS_CONTAINER_ID} .request-item[data-id='${targetId}'] .${APPLIED_REQUEST_BADGE_CLASSNAME}`
+        )
         .classList.remove('d-none');
     })
     .catch(error => {
       showPageError([
         {
           title: 'Apply for request failed',
-          message:
-            error.response.data &&
-            (error.response.data.detail || error.response.data.non_field_errors),
+          message: parseApiErrors(error.response.data),
         },
       ]);
       return;
     });
 }
 
+/** Traveler close solved request */
 function handleSolveForRequest() {
   const targetId = this.dataset['request'];
 
@@ -372,30 +346,30 @@ function handleSolveForRequest() {
 
       // change header bg
       const requestHeader = document.querySelector(
-        `#user-requests .request-item[data-id='${targetId}'] .card-header`
+        `#${USER_REQUESTS_CONTAINER_ID} .request-item[data-id='${targetId}'] .card-header`
       );
       requestHeader.classList.remove('bg-primary');
       requestHeader.classList.add('bg-success');
 
       // remove status badges
       document
-        .querySelector(`#user-requests .request-item[data-id='${targetId}'] .js-progress-badge`)
+        .querySelector(
+          `#${USER_REQUESTS_CONTAINER_ID} .request-item[data-id='${targetId}'] .${PROGRESS_REQUEST_BADGE_CLASSNAME}`
+        )
         .classList.add('d-none');
     })
     .catch(error => {
       showPageError([
         {
           title: "Can't close request",
-          message:
-            (error.response.data &&
-              (error.response.data.detail || error.response.data.non_field_errors)) ||
-            JSON.stringify(error.response.data),
+          message: parseApiErrors(error.response.data),
         },
       ]);
       return;
     });
 }
 
+/** Traveler fetch buddy candeidates for reqeust */
 function handleShowBuddyCandidatesForRequest() {
   const requestId = this.dataset.requestId;
   const buddiesCandidatesModal = new Modal(document.getElementById('chooseBuddy'));
@@ -438,9 +412,7 @@ function handleShowBuddyCandidatesForRequest() {
               showPageError([
                 {
                   title: 'Something wrong',
-                  message:
-                    error.response.data &&
-                    (error.response.data.detail || error.response.data.non_field_errors),
+                  message: parseApiErrors(error.response.data),
                 },
               ]);
               return;
@@ -452,15 +424,14 @@ function handleShowBuddyCandidatesForRequest() {
       showPageError([
         {
           title: 'Something wrong',
-          message:
-            error.response.data &&
-            (error.response.data.detail || error.response.data.non_field_errors),
+          message: parseApiErrors(error.response.data),
         },
       ]);
       return;
     });
 }
 
+/** Traveler choose buddy for request */
 function handleChooseBuddyForRequest(targetId, name, contacts) {
   document.querySelector(
     `#user-requests .request-item[data-id='${targetId}'] .card-footer`
@@ -478,13 +449,18 @@ function handleChooseBuddyForRequest(targetId, name, contacts) {
 
   // add progress badge
   document
-    .querySelector(`#user-requests .request-item[data-id='${targetId}'] .js-open-badge`)
+    .querySelector(
+      `#${USER_REQUESTS_CONTAINER_ID} .request-item[data-id='${targetId}'] .${OPEN_REQUEST_BADGE_CLASSNAME}`
+    )
     .classList.add('d-none');
   document
-    .querySelector(`#user-requests .request-item[data-id='${targetId}'] .js-progress-badge`)
+    .querySelector(
+      `#${USER_REQUESTS_CONTAINER_ID} .request-item[data-id='${targetId}'] .${PROGRESS_REQUEST_BADGE_CLASSNAME}`
+    )
     .classList.remove('d-none');
 }
 
+/** Traveler cancel request */
 function handleCancelRequest() {
   const requestId = this.dataset.requestId;
 
@@ -492,19 +468,20 @@ function handleCancelRequest() {
     status: 3, // cancel request
   })
     .then(() => {
+      // remove cancel button
+      this.classList.add('d-none');
+
       const request = document.querySelector(`.request-item[data-id="${requestId}"]`);
-      request.querySelector('.js-open-badge').classList.add('d-none');
-      request.querySelector('.card-header').classList.remove('bg-primary');
-      request.querySelector('.card-header').classList.add('bg-dark');
+      const requestHeader = request.querySelector('.card-header');
+      request.querySelector(`.${OPEN_REQUEST_BADGE_CLASSNAME}`).classList.add('d-none');
+      requestHeader.classList.remove('bg-primary');
+      requestHeader.classList.add('bg-dark');
     })
     .catch(error => {
       showPageError([
         {
           title: "Can't cancel request",
-          message:
-            (error.response.data &&
-              (error.response.data.detail || error.response.data.non_field_errors)) ||
-            JSON.stringify(error.response.data),
+          message: parseApiErrors(error.response.data),
         },
       ]);
       return;

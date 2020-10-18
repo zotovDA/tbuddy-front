@@ -1,14 +1,7 @@
 import Tooltip from 'bootstrap/js/src/tooltip';
 import { getCurrentUserId } from '../auth';
-import {
-  formDataToObj,
-  initApiErrorHandling,
-  searchCity,
-  TemplateManager,
-  debounce,
-} from '../helpers';
-import Choices from 'choices.js';
-import 'choices.js/public/assets/styles/choices.min.css';
+import { formatUser, FormManager, getURLParams, User } from '../helpers';
+import { initCitySearchInput, initDoBInput } from '../view';
 
 import alertTemplate from '../../templates/alert.hbs';
 import profileEditStep2Template from '../../templates/profile/_step2.hbs';
@@ -20,38 +13,22 @@ import profileSuccessEditTemplate from '../../templates/profile/editSuccessMessa
 import profileTemplate from '../../templates/profile/userProfile.hbs';
 import editBuddyTemplate from '../../templates/profile/buddyEdit.hbs';
 import profileEditTemplate from '../../templates/profile/profileEdit.hbs';
-import processingTemplate from '../../templates/typo/processing.hbs';
 
 import moment from 'moment';
-import IMask from 'imask';
 
 import '../common';
 import Axios from 'axios';
-import { requestsCategories } from '../constants';
+import { momentDateFormat, requestsCategories } from '../constants';
 
-const queryString = window.location.search;
-const urlParams = new URLSearchParams(queryString);
-
-const momentDateFormat = 'DD.MM.YYYY';
+const urlParams = getURLParams();
 
 let profileContainer;
-let currentUser = {
-  firstname: '',
-  surname: '',
-  gender: '',
-  dob: '',
-  bio: '',
-  photo: '',
-  place: '',
-  city: '',
-  activities: [],
-  contacts: '',
+const user = new User();
 
-  isBuddy: false,
-};
 document.addEventListener('init', function() {
   profileContainer = document.getElementById('js-user-profile');
   if (!getCurrentUserId()) {
+    // TODO: push page error
     profileContainer.innerHTML = alertTemplate({ type: 'danger', message: 'No user id' });
     return;
   }
@@ -61,25 +38,13 @@ document.addEventListener('init', function() {
     Axios.get(`/profiles/${getCurrentUserId()}/`)
       .then(response => {
         const userData = response.data;
-        currentUser = {
-          firstname: userData.first_name,
-          surname: userData.last_name,
-          gender: userData.gender,
-          dob: moment(userData.dob, 'YYYY-MM-DD').format(momentDateFormat),
-          bio: userData.bio,
-          photo: userData.image,
-          place: userData.city && userData.city.display_name,
-          city: userData.city && userData.city.id,
-          activities: userData.activities && userData.activities.map(activity => activity.type),
-          contacts: userData.contacts,
+        user.setData(formatUser(userData));
 
-          isBuddy: userData.is_buddy,
-        };
-        if (userData.is_manual) {
+        if (user.hasProfile()) {
           drawUserProfile();
         } else {
           // user didn't finish registration
-          initRegistrationSteps(currentUser);
+          initRegistrationSteps(user.getData());
         }
       })
       .catch(error => {
@@ -87,6 +52,7 @@ document.addEventListener('init', function() {
         if (error.response.status === 404) {
           initRegistrationSteps();
         } else {
+          // TODO: push page error
           profileContainer.innerHTML = alertTemplate({
             type: 'danger',
             message: "Can't load user data",
@@ -100,23 +66,20 @@ function initRegistrationSteps(userData) {
   if (!userData) {
     // new user
     profileContainer.innerHTML = profileEditTemplate({ needCreate: true });
-    document
-      .getElementById('js-profile-edit-form')
-      .addEventListener('submit', handleCreatingProfile);
+
+    const registrationFormManager = new FormManager('js-profile-edit-form');
+    registrationFormManager.setHandler(handleCreatingProfile);
   } else {
     // social user
-    // FIXME: handle existing data in inputs(phone numbers)
     profileContainer.innerHTML = profileEditTemplate({ ...userData, needCreate: true });
-    document
-      .getElementById('js-profile-edit-form')
-      .addEventListener('submit', e => handleCreatingProfile(e, true));
+    initDoBInput('[name=dob]');
+
+    const registrationFormManager = new FormManager('js-profile-edit-form');
+    registrationFormManager.setHandler(manager => handleCreatingProfile(manager, true));
   }
 }
 
-function initStep2() {
-  profileContainer.innerHTML = profileEditStep2Template();
-  document.getElementById('js-profile-edit-form').addEventListener('submit', handleEditPhoto);
-  document.getElementById('js-profile-step2-skip').addEventListener('click', initStep3);
+function initPhotoChangeBinds() {
   document.getElementById('profile-photo').addEventListener('change', function() {
     if (this.files[0]) {
       var reader = new FileReader();
@@ -129,6 +92,16 @@ function initStep2() {
       reader.readAsDataURL(this.files[0]);
     }
   });
+}
+
+function initStep2() {
+  profileContainer.innerHTML = profileEditStep2Template();
+
+  const formManager = new FormManager('js-profile-edit-form');
+  formManager.setHandler(handleEditPhoto);
+
+  document.getElementById('js-profile-step2-skip').addEventListener('click', initStep3);
+  initPhotoChangeBinds();
 }
 
 function initStep3() {
@@ -148,159 +121,76 @@ function initStep4() {
 
 function drawUserProfile() {
   profileContainer.innerHTML = profileTemplate({
-    ...currentUser,
-    age: moment().diff(moment(currentUser.dob, momentDateFormat), 'years'),
+    ...user.getData(),
   });
-  if (!currentUser.isBuddy) {
+  if (!user.isBuddy()) {
     document
       .getElementById('js-edit-buddy')
       .addEventListener('click', () => drawBuddyEditProfile());
-  }
-  document.getElementById('js-edit-primary').addEventListener('click', drawUserEditProfile);
-  document
-    .getElementById('js-photo-edit-modal-form')
-    .addEventListener('submit', handleModalEditPhoto);
-  document.getElementById('profile-photo').addEventListener('change', function() {
-    if (this.files[0]) {
-      var reader = new FileReader();
+    document.getElementById('js-edit-primary').addEventListener('click', drawUserEditProfile);
 
-      reader.onload = function(e) {
-        document.getElementById('js-profile-photo-preview').classList.remove('d-none');
-        const previewImgs = [...document.querySelectorAll('#js-profile-photo-preview img')];
-        previewImgs.forEach(item => (item.src = e.target.result));
-      };
-      reader.readAsDataURL(this.files[0]);
+    const formManager = new FormManager('js-photo-edit-modal-form', initPhotoChangeBinds);
+    formManager.setHandler(handleModalEditPhoto);
+  } else {
+    const buddyBadgeNode = document.querySelector('[data-toggle="tooltip"]');
+    if (buddyBadgeNode) {
+      new Tooltip(buddyBadgeNode);
     }
-  });
-  const buddyBadgeNode = document.querySelector('[data-toggle="tooltip"]');
-  if (buddyBadgeNode) {
-    new Tooltip(buddyBadgeNode);
   }
-  // TODO: define common isNotConfirmedBuddy()
-  if (!currentUser.isBuddy && currentUser.place) {
+
+  if (user.isNotConfirmedBuddy()) {
     document.getElementById('profile-moderation').classList.remove('d-none');
   }
 }
 
 function drawUserEditProfile() {
+  const userData = user.getData();
   profileContainer.innerHTML = profileEditTemplate({
-    ...currentUser,
-    isFemale: currentUser.gender !== 'male',
+    ...userData,
+    isFemale: userData.gender !== 'male',
   });
 
-  const currentYear = moment().get('year');
-  IMask(document.querySelector('[name=dob]'), {
-    mask: Date,
-    pattern: momentDateFormat,
-    min: new Date(currentYear - 100, 0, 1),
-    max: new Date(currentYear - 17, 0, 1),
-
-    format: function(date) {
-      return moment(date).format(momentDateFormat);
-    },
-    parse: function(str) {
-      return moment(str, momentDateFormat);
-    },
-
-    blocks: {
-      YYYY: {
-        mask: IMask.MaskedRange,
-        from: 1970,
-        to: 2030,
-      },
-      MM: {
-        mask: IMask.MaskedRange,
-        from: 1,
-        to: 12,
-      },
-      DD: {
-        mask: IMask.MaskedRange,
-        from: 1,
-        to: 31,
-      },
-    },
+  const editProfileFormManager = new FormManager('js-profile-edit-form', function() {
+    initDoBInput('[name=dob]');
+    [...document.getElementsByClassName('js-profile-edit-cancel')].forEach(item =>
+      item.addEventListener('click', drawUserProfile)
+    );
   });
-
-  document.getElementById('js-profile-edit-form').addEventListener('submit', handleEditProfile);
-  [...document.getElementsByClassName('js-profile-edit-cancel')].forEach(item =>
-    item.addEventListener('click', drawUserProfile)
-  );
+  editProfileFormManager.setHandler(handleEditProfile);
 }
 
 function drawBuddyEditProfile(needCreate) {
+  const userData = user.getData();
   profileContainer.innerHTML = editBuddyTemplate({
-    ...currentUser,
+    ...userData,
     profileSkills: requestsCategories.map(skill => ({
       label: skill,
-      checked: currentUser.activities.some(item => skill === item),
+      checked: userData.activities.some(item => skill === item),
     })),
     needCreate: needCreate,
   });
-  document
-    .getElementById('js-profile-edit-form')
-    .addEventListener('submit', e => handleEditBuddyProfile(e, needCreate));
-  [...document.getElementsByClassName('js-profile-edit-cancel')].forEach(item =>
-    item.addEventListener('click', drawUserProfile)
-  );
 
-  const citySelect = document.getElementById('profile-city');
-  const choices = new Choices(citySelect, {
-    noChoicesText: 'No cities found',
-    duplicateItemsAllowed: false,
-    searchChoices: false,
-    shouldSort: false,
+  const buddyEditFormManager = new FormManager('js-profile-edit-form', function() {
+    [...document.getElementsByClassName('js-profile-edit-cancel')].forEach(item =>
+      item.addEventListener('click', drawUserProfile)
+    );
+
+    initCitySearchInput('profile-city', { value: userData.city, label: userData.place });
   });
-
-  if (currentUser.city) {
-    choices.setValue([
-      {
-        value: currentUser.city,
-        label: currentUser.place,
-      },
-    ]);
-  }
-
-  citySelect.addEventListener(
-    'search',
-    debounce(function({ detail }) {
-      const value = detail.value;
-      if (!value || value.length < 2) {
-        return;
-      }
-
-      searchCity(value).then(citiesList => {
-        choices.setChoices(
-          citiesList.map(city => ({ value: city.id, label: city.display_name })),
-          'value',
-          'label',
-          true
-        );
-      });
-    }, 500)
-  );
+  buddyEditFormManager.setHandler(manager => handleEditBuddyProfile(manager, needCreate));
 }
 
-function handleEditBuddyProfile(e, inRegister) {
-  e.preventDefault();
-  const target = e.target;
-  target.classList.remove('was-validated');
-  if (!target.checkValidity()) {
-    target.classList.add('was-validated');
-    return;
-  }
-
-  const formData = new FormData(target);
-  const data = formDataToObj(formData);
+/** Edit buddy info profile
+ * @param {FormManager} manager
+ * @param {boolean?} inRegister
+ */
+function handleEditBuddyProfile(manager, inRegister) {
+  const data = manager.getValues();
 
   if (data['city'] === '') {
-    target.querySelector('.choices ~ .invalid-feedback').classList.add('d-block');
+    manager.showFieldError('city');
     return;
-  } else {
-    target.querySelector('.choices ~ .invalid-feedback').classList.remove('d-block');
   }
-
-  const submitButtonTemplate = new TemplateManager(target.querySelector('button[type=submit]'));
-  submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
 
   Axios.patch(`/profiles/${getCurrentUserId()}/`, {
     bio: data['bio'],
@@ -311,54 +201,24 @@ function handleEditBuddyProfile(e, inRegister) {
         ? [{ type: data['activities'] }]
         : data['activities'].map(skill => ({ type: skill }))
       : [],
-  })
-    .then(() => {
-      currentUser = { ...currentUser, ...data };
-      if (inRegister) {
-        initStep4();
-      } else {
-        drawUserProfile();
-        document.getElementById('profile-edit-success').classList.remove('d-none');
-      }
-    })
-    .catch(error => {
-      initApiErrorHandling(e.target, error.response.data);
-      submitButtonTemplate.restore();
-    });
+  }).then(() => {
+    user.setData(data);
+
+    if (inRegister) {
+      initStep4();
+    } else {
+      drawUserProfile();
+      document.getElementById('profile-edit-success').classList.remove('d-none');
+    }
+  });
 }
 
-/** @param {Event} e */
-function handleCreatingProfile(e, hasProfile) {
-  e.preventDefault();
-  const target = e.target;
-  target.classList.remove('was-validated');
-  if (!target.checkValidity()) {
-    target.classList.add('was-validated');
-    return;
-  }
-
-  const formData = new FormData(target);
-  const data = formDataToObj(formData);
-
-  const currentYear = moment().get('year');
-  if (
-    moment(data['dob'], momentDateFormat).isBetween(
-      moment()
-        .set('year', currentYear - 120)
-        .format(),
-      moment()
-        .set('year', currentYear - 14)
-        .format()
-    )
-  ) {
-    target.querySelector('[name=dob]').classList.remove('is-invalid');
-  } else {
-    target.querySelector('[name=dob]').classList.add('is-invalid');
-    return;
-  }
-
-  const submitButtonTemplate = new TemplateManager(target.querySelector('button[type=submit]'));
-  submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
+/** Handle creating profile
+ * @param {FormManager} manager
+ * @param {boolean?} hasProfile
+ */
+function handleCreatingProfile(manager, hasProfile) {
+  const data = manager.getValues();
 
   Axios({
     method: hasProfile ? 'PUT' : 'POST',
@@ -370,128 +230,71 @@ function handleCreatingProfile(e, hasProfile) {
       dob: moment(data['dob'], momentDateFormat).format('YYYY-MM-DD'),
       bio: data['bio'],
     },
-  })
-    .then(() => {
-      currentUser = { ...currentUser, ...data };
-      initStep2();
-    })
-    .catch(error => {
-      initApiErrorHandling(e.target, error.response.data);
-      submitButtonTemplate.restore();
-    });
+  }).then(() => {
+    user.setData(data);
+
+    initStep2();
+  });
 }
 
-function handleEditProfile(e) {
-  e.preventDefault();
-  this.classList.remove('was-validated');
-  if (!this.checkValidity()) {
-    this.classList.add('was-validated');
-    return;
-  }
-
-  const formData = new FormData(this);
-  const data = formDataToObj(formData);
-
-  const currentYear = moment().get('year');
-  if (
-    moment(data['dob'], momentDateFormat).isBetween(
-      moment()
-        .set('year', currentYear - 120)
-        .format(),
-      moment()
-        .set('year', currentYear - 14)
-        .format()
-    )
-  ) {
-    this.querySelector('[name=dob]').classList.remove('is-invalid');
-  } else {
-    this.querySelector('[name=dob]').classList.add('is-invalid');
-    return;
-  }
-
-  const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
-  submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
-
+/** Edit profile information
+ * @param {FormManager} manager
+ */
+function handleEditProfile(manager) {
+  const data = manager.getValues();
   Axios.patch(`/profiles/${getCurrentUserId()}/`, {
     first_name: data['firstname'],
     last_name: data['surname'],
     gender: data['gender'],
     dob: moment(data['dob'], momentDateFormat).format('YYYY-MM-DD'),
     bio: data['bio'],
-  })
-    .then(() => {
-      localStorage.setItem(
-        'user',
-        JSON.stringify({ id: getCurrentUserId(), name: data['firstname'] })
-      );
-      currentUser = { ...currentUser, ...data };
-      drawUserProfile();
-      document.getElementById('profile-edit-success').classList.remove('d-none');
-    })
-    .catch(error => {
-      initApiErrorHandling(e.target, error.response.data);
-      submitButtonTemplate.restore();
-    });
+  }).then(() => {
+    localStorage.setItem(
+      'user',
+      JSON.stringify({ id: getCurrentUserId(), name: data['firstname'] })
+    );
+    user.setData(data);
+
+    drawUserProfile();
+    document.getElementById('profile-edit-success').classList.remove('d-none');
+  });
 }
 
-function handleEditPhoto(e) {
-  e.preventDefault();
-  this.classList.remove('was-validated');
-  if (!this.checkValidity()) {
-    this.classList.add('was-validated');
-    return;
-  }
-
-  const formData = new FormData(this);
-
-  const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
-  submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
+/** Change profile photo
+ * @param {FormManager} manager
+ */
+function handleEditPhoto(manager) {
+  const formData = manager.getFormData();
 
   Axios({
     method: 'put',
     url: `/profiles/${getCurrentUserId()}/photo/`,
     data: formData,
     headers: { 'Content-Type': 'multipart/form-data' },
-  })
-    .then(response => {
-      currentUser.photo = response.data.image;
-      initStep3();
-    })
-    .catch(error => {
-      initApiErrorHandling(e.target, error.response.data);
-      submitButtonTemplate.restore();
-    });
+  }).then(response => {
+    user.setData({ photo: response.data.image });
+
+    initStep3();
+  });
 }
 
-function handleModalEditPhoto(e) {
-  e.preventDefault();
-  this.classList.remove('was-validated');
-  if (!this.checkValidity()) {
-    this.classList.add('was-validated');
-    return;
-  }
-
-  const formData = new FormData(this);
-
-  const submitButtonTemplate = new TemplateManager(this.querySelector('button[type=submit]'));
-  submitButtonTemplate.change(processingTemplate({ text: 'Loading' }));
+/** Change profile photo in modal
+ * @param {FormManager} manager
+ */
+function handleModalEditPhoto(manager) {
+  const formData = manager.getFormData();
 
   Axios({
     method: 'put',
     url: `/profiles/${getCurrentUserId()}/photo/`,
     data: formData,
     headers: { 'Content-Type': 'multipart/form-data' },
-  })
-    .then(response => {
-      currentUser.photo = response.data.image;
-      [...document.getElementsByClassName('js-profile-image')].forEach(
-        item => (item.src = currentUser.photo)
-      );
-      document.getElementById('form-message').innerHTML = profileSuccessEditTemplate();
-      submitButtonTemplate.restore();
-    })
-    .catch(error => {
-      initApiErrorHandling(e.target, error.response.data);
-      submitButtonTemplate.restore();
-    });
+  }).then(response => {
+    user.setData({ photo: response.data.image });
+
+    [...document.getElementsByClassName('js-profile-image')].forEach(
+      item => (item.src = response.data.image)
+    );
+    document.getElementById('form-message').innerHTML = profileSuccessEditTemplate();
+  });
 }

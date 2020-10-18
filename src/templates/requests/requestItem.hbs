@@ -34,14 +34,17 @@
       </p>
 
       {{#if forBuddy}}
+      {{#if isOpen}}
       <div class="text-center">
         <button data-request="{{ id }}" data-price="{{ price }}"
           class="js-apply-button btn btn-secondary">Apply</button>
       </div>
       {{/if}}
+      {{/if}}
     </div>
   </div>
 
+  {{#unless forBuddy}}
   {{#if buddy}}
   <div class="card-footer">
     {{> requests/_requestBuddy 
@@ -52,7 +55,6 @@
   }}
   </div>
   {{else}}
-  {{#unless forBuddy}}
   <div class="card-footer">
     {{ buddiesCount }} buddies applied
     {{#if buddiesCount}}
@@ -61,6 +63,6 @@
       </a></div>
     {{/if}}
   </div>
-  {{/unless}}
   {{/if}}
+  {{/unless}}
 </div>
