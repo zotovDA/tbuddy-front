@@ -205,7 +205,7 @@ export function formatUser(data) {
       surname: data.last_name,
       gender: data.gender,
       dob: moment(data.dob, 'YYYY-MM-DD').format(momentDateFormat),
-      age: moment().diff(moment(data.dob, momentDateFormat), 'years'),
+      age: moment().diff(moment(data.dob, 'YYYY-MM-DD'), 'years'),
       bio: data.bio,
       photo: data.image,
       place: data.city && data.city.display_name,
@@ -259,6 +259,7 @@ export function formatRequest(request) {
       isCanceled: request.status === 3,
       isDone: request.status === 2,
       name: request.applicant_profile.first_name,
+      photo: request.applicant_profile.image,
       price: parseInt(request.price),
       description: request.details,
       activities: (request.activities || []).map(activity => activity.type),
@@ -513,7 +514,7 @@ export class User {
   }
 
   isNotConfirmedBuddy() {
-    return this.isBuddy() && this.user.place;
+    return !this.isBuddy() && this.user.place;
   }
 
   isVerified() {

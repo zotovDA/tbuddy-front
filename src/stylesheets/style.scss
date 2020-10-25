@@ -67,3 +67,8 @@ h6 {
   grid-row-start: 2;
   grid-row-end: 3;
 }
+
+.was-validated .form-check-input:valid ~ .form-check-label,
+.form-check-input.is-valid ~ .form-check-label {
+  color: inherit;
+}
