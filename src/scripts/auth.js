@@ -74,8 +74,9 @@ export function restoreSessionFromStore() {
 
 export function handleLogout() {
   clearUserSessionFromStore();
-  updateNavUser(null);
-  delete Axios.defaults.headers.common['Authorization'];
+  window.location = '/';
+  // updateNavUser(null);
+  // delete Axios.defaults.headers.common['Authorization'];
   // TODO: add redirects
 }
 
