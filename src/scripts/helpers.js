@@ -513,7 +513,7 @@ export class User {
   }
 
   isNotConfirmedBuddy() {
-    return this.isBuddy() && this.user.place;
+    return !this.isBuddy() && this.user.place;
   }
 
   isVerified() {
