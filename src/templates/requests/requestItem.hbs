@@ -1,6 +1,7 @@
 <div data-id="{{ id }}" class="request-item js-request-item card">
-  <div class="card-header {{#if isDone}}bg-success{{else if isCanceled}}bg-dark{{else}}bg-primary{{/if}} bg-gradient text-white">{{ name }}
-    needs help
+  <div
+    class="card-header {{#if isDone}}bg-success{{else if isCanceled}}bg-dark{{else}}bg-primary{{/if}} bg-gradient text-white">
+    {{> avatar photo=photo}}&emsp;{{ name }} needs help
     <span class="js-open-badge ml-2 badge bg-secondary {{#unless isOpen}}d-none{{/unless}}">open</span>
     <span class="js-closed-badge ml-2 badge bg-secondary {{#unless isDone}}d-none{{/unless}}">closed</span>
     <span class="js-canceled-badge ml-2 badge bg-secondary {{#unless isCanceled}}d-none{{/unless}}">canceled</span>

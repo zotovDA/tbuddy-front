@@ -259,6 +259,7 @@ export function formatRequest(request) {
       isCanceled: request.status === 3,
       isDone: request.status === 2,
       name: request.applicant_profile.first_name,
+      photo: request.applicant_profile.image,
       price: parseInt(request.price),
       description: request.details,
       activities: (request.activities || []).map(activity => activity.type),
