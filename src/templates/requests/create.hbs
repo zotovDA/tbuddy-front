@@ -7,7 +7,7 @@
           <option value="">Start typing the city...</option>
         </select>
       </div>
-      <div class="invalid-feedback text-white">Please choose the city</div>
+      <div class="invalid-feedback">Please choose the city</div>
     </div>
 
     <div class="mb-3 row">
@@ -16,7 +16,7 @@
         <input type="text" required value="{{ dateFrom }}" placeholder="dd.mm.yyyy" name="dateFrom" class="form-control"
           id="request-date-from">
         <div class="form-text text-white-50">Date when request will be actual</div>
-        <div class="invalid-feedback text-white">Please type correct date</div>
+        <div class="invalid-feedback">Please type correct date</div>
       </div>
 
       <div class="col">
@@ -24,7 +24,7 @@
         <input type="text" required value="{{ dateTo }}" placeholder="dd.mm.yyyy" name="dateTo" class="form-control"
           id="request-date-to">
         <div class="form-text text-white-50">Date when request will be no longer actual</div>
-        <div class="invalid-feedback text-white">Please type correct date</div>
+        <div class="invalid-feedback">Please type correct date</div>
       </div>
     </div>
 
@@ -36,26 +36,26 @@
         <label class="form-check-label" for="skill-{{ this }}">{{ this }}</label>
       </div>
       {{/each}}
-      <div class="invalid-feedback text-white">Please choose something</div>
+      <div class="invalid-feedback">Please choose something</div>
     </div>
 
     <div class="mb-3">
       <label for="request-price" class="form-label">Approximate price</label>
-      <input required type="text" name="price" class="form-control" id="request-price">
-      <div class="invalid-feedback text-white">Please type correct price</div>
+      <input required type="text" name="price" placeholder="$" class="form-control" id="request-price">
+      <div class="invalid-feedback">Please type correct price</div>
     </div>
 
     <div class="mb-3">
       <label for="request-description" class="form-label">Describe the need</label>
       <textarea required placeholder="Tell in few words what should be done to help you" name="description"
         class="form-control" maxlength="200" id="request-description" rows="3">{{ details }}</textarea>
-      <div class="invalid-feedback text-white">Please describe your need</div>
+      <div class="invalid-feedback">Please describe your need</div>
     </div>
-    <div class="mb-3 form-feedback invalid-feedback text-white"></div>
+    <div class="mb-3 form-feedback invalid-feedback"></div>
     <div id="form-message" class="mb-3"></div>
 
     <div class="text-center">
-      <button type="submit" class="btn btn-secondary btn-lg">
+      <button type="submit" class="btn btn-primary btn-lg">
         Publish
       </button>
     </div>
