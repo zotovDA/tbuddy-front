@@ -205,7 +205,7 @@ export function formatUser(data) {
       surname: data.last_name,
       gender: data.gender,
       dob: moment(data.dob, 'YYYY-MM-DD').format(momentDateFormat),
-      age: moment().diff(moment(data.dob, momentDateFormat), 'years'),
+      age: moment().diff(moment(data.dob, 'YYYY-MM-DD'), 'years'),
       bio: data.bio,
       photo: data.image,
       place: data.city && data.city.display_name,
