@@ -5,7 +5,7 @@ import '../../stylesheets/style.scss';
 import Axios from 'axios';
 import { getUserFromToken, parseApiErrors } from '../helpers';
 
-Axios.defaults.baseURL = 'https://molodykh.pro/';
+Axios.defaults.baseURL = 'https://api.travelbuddy.io/';
 
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);

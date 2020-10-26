@@ -8,7 +8,7 @@ import { initNavigateBackBinds, initScrollToBinds } from './view';
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 
-Axios.defaults.baseURL = 'https://molodykh.pro/';
+Axios.defaults.baseURL = 'https://api.travelbuddy.io/';
 
 async function onInit() {
   if (urlParams.has('authed')) {
