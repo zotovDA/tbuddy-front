@@ -1,6 +1,6 @@
 import Tooltip from 'bootstrap/js/src/tooltip';
 import { getCurrentUserId } from '../auth';
-import { formatUser, FormManager, getURLParams, User } from '../helpers';
+import { formatUser, FormManager, User } from '../helpers';
 import { initCitySearchInput, initDoBInput } from '../view';
 
 import alertTemplate from '../../templates/alert.hbs';
@@ -20,8 +20,6 @@ import '../common';
 import Axios from 'axios';
 import { momentDateFormat, requestsCategories } from '../constants';
 
-const urlParams = getURLParams();
-
 let profileContainer;
 const user = new User();
 
@@ -32,34 +30,30 @@ document.addEventListener('init', function() {
     profileContainer.innerHTML = alertTemplate({ type: 'danger', message: 'No user id' });
     return;
   }
-  if (urlParams.has('fromRegister')) {
-    initRegistrationSteps();
-  } else {
-    Axios.get(`/profiles/${getCurrentUserId()}/`)
-      .then(response => {
-        const userData = response.data;
-        user.setData(formatUser(userData));
+  Axios.get(`/profiles/${getCurrentUserId()}/`)
+    .then(response => {
+      const userData = response.data;
+      user.setData(formatUser(userData));
 
-        if (user.hasProfile()) {
-          drawUserProfile();
-        } else {
-          // user didn't finish registration
-          initRegistrationSteps(user.getData());
-        }
-      })
-      .catch(error => {
-        console.error(error);
-        if (error.response.status === 404) {
-          initRegistrationSteps();
-        } else {
-          // TODO: push page error
-          profileContainer.innerHTML = alertTemplate({
-            type: 'danger',
-            message: "Can't load user data",
-          });
-        }
-      });
-  }
+      if (user.hasProfile()) {
+        drawUserProfile();
+      } else {
+        // user didn't finish registration
+        initRegistrationSteps(user.getData());
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      if (error.response.status === 404) {
+        initRegistrationSteps();
+      } else {
+        // TODO: push page error
+        profileContainer.innerHTML = alertTemplate({
+          type: 'danger',
+          message: "Can't load user data",
+        });
+      }
+    });
 });
 
 function initRegistrationSteps(userData) {
@@ -67,14 +61,18 @@ function initRegistrationSteps(userData) {
     // new user
     profileContainer.innerHTML = profileEditTemplate({ needCreate: true });
 
-    const registrationFormManager = new FormManager('js-profile-edit-form');
+    const registrationFormManager = new FormManager('js-profile-edit-form', function() {
+      initDoBInput('[name=dob]');
+    });
     registrationFormManager.setHandler(handleCreatingProfile);
   } else {
     // social user
     profileContainer.innerHTML = profileEditTemplate({ ...userData, needCreate: true });
     initDoBInput('[name=dob]');
 
-    const registrationFormManager = new FormManager('js-profile-edit-form');
+    const registrationFormManager = new FormManager('js-profile-edit-form', function() {
+      initDoBInput('[name=dob]');
+    });
     registrationFormManager.setHandler(manager => handleCreatingProfile(manager, true));
   }
 }
