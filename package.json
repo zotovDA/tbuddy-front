@@ -104,6 +104,8 @@
     ]
   },
   "dependencies": {
+    "@sentry/browser": "^5.27.3",
+    "@sentry/tracing": "^5.27.3",
     "animated-scroll-to": "^2.0.10",
     "axios": "^0.20.0",
     "bootstrap": "^5.0.0-alpha1",
