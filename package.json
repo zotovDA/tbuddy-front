@@ -61,7 +61,7 @@
     "rimraf": "^3.0.0",
     "sass-loader": "^8.0.0",
     "style-loader": "^1.0.0",
-    "stylelint": "^11.0.0",
+    "stylelint": "^13.7.2",
     "stylelint-config-prettier": "^6.0.0",
     "stylelint-config-recommended": "^3.0.0",
     "stylelint-config-sass-guidelines": "^6.1.0",

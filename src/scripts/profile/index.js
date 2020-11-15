@@ -1,7 +1,7 @@
 import Tooltip from 'bootstrap/js/src/tooltip';
 import { getCurrentUserId } from '../auth';
 import { formatUser, FormManager, User } from '../helpers';
-import { initCitySearchInput, initDoBInput } from '../view';
+import { initCitySearchInput, initDoBInput, showPageError } from '../view';
 
 import alertTemplate from '../../templates/alert.hbs';
 import profileEditStep2Template from '../../templates/profile/_step2.hbs';
@@ -186,11 +186,16 @@ function handleEditBuddyProfile(manager, inRegister) {
   const data = manager.getValues();
 
   if (data['city'] === '') {
-    manager.showFieldError('city');
+    showPageError([
+      {
+        title: 'Empty city',
+        message: 'Please choose your city',
+      },
+    ]);
     return;
   }
 
-  Axios.patch(`/profiles/${getCurrentUserId()}/`, {
+  return Axios.patch(`/profiles/${getCurrentUserId()}/`, {
     bio: data['bio'],
     city_id: parseInt(data['city']),
     contacts: data['contacts'],
@@ -200,7 +205,15 @@ function handleEditBuddyProfile(manager, inRegister) {
         : data['activities'].map(skill => ({ type: skill }))
       : [],
   }).then(() => {
-    user.setData(data);
+    user.setData({
+      ...data,
+      place: document.querySelector(`option[value="${data['city']}"]`).innerHTML,
+      activities: data['activities']
+        ? typeof data['activities'] === 'string'
+          ? [data['activities']]
+          : data['activities']
+        : [],
+    });
 
     if (inRegister) {
       initStep4();
@@ -218,7 +231,7 @@ function handleEditBuddyProfile(manager, inRegister) {
 function handleCreatingProfile(manager, hasProfile) {
   const data = manager.getValues();
 
-  Axios({
+  return Axios({
     method: hasProfile ? 'PUT' : 'POST',
     url: hasProfile ? `/profiles/${getCurrentUserId()}/` : '/profiles/',
     data: {
@@ -229,7 +242,10 @@ function handleCreatingProfile(manager, hasProfile) {
       bio: data['bio'],
     },
   }).then(() => {
-    user.setData(data);
+    user.setData({
+      ...data,
+      age: moment().diff(moment(data['dob'], momentDateFormat), 'years'),
+    });
 
     initStep2();
   });
@@ -240,7 +256,7 @@ function handleCreatingProfile(manager, hasProfile) {
  */
 function handleEditProfile(manager) {
   const data = manager.getValues();
-  Axios.patch(`/profiles/${getCurrentUserId()}/`, {
+  return Axios.patch(`/profiles/${getCurrentUserId()}/`, {
     first_name: data['firstname'],
     last_name: data['surname'],
     gender: data['gender'],
@@ -251,7 +267,10 @@ function handleEditProfile(manager) {
       'user',
       JSON.stringify({ id: getCurrentUserId(), name: data['firstname'] })
     );
-    user.setData(data);
+    user.setData({
+      ...data,
+      age: moment().diff(moment(data['dob'], momentDateFormat), 'years'),
+    });
 
     drawUserProfile();
     document.getElementById('profile-edit-success').classList.remove('d-none');

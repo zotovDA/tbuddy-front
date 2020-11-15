@@ -36,7 +36,10 @@ export function formDataToObj(formData) {
   if (!formData) return object;
   formData.forEach((value, key) => {
     if (object[key]) {
-      object[key] = [object[key], value];
+      if (!Array.isArray(object[key])) {
+        object[key] = [object[key]];
+      }
+      object[key].push(value);
     } else {
       object[key] = value;
     }

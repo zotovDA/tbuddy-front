@@ -82,66 +82,73 @@ document.addEventListener('init', async function() {
       .then(response => {
         const userData = response.data;
         user.setData(formatUser(userData));
-      })
-      .catch(() => {
-        bannerContainer.change(unauthorizedTemplate());
-        return;
-      });
-  }
-  if (!user.isVerified()) {
-    document.getElementById('email-verify').classList.remove('d-none');
-    return;
-  }
-  if (!user.hasProfile()) {
-    document.getElementById('profile-create').classList.remove('d-none');
-    return;
-  }
 
-  // if user is all right
-  drawCreateRequest();
+        if (!user.isVerified()) {
+          document.getElementById('email-verify').classList.remove('d-none');
+          bannerContainer.change('');
+          return;
+        }
+        if (!user.hasProfile()) {
+          document.getElementById('profile-create').classList.remove('d-none');
+          return;
+        }
 
-  // TODO: add pagination
-  Axios.get(`/claims/`, { params: { limit: 100 } })
-    .then(response => {
-      const data = response.data;
-      data.results.forEach(request => {
-        userRequests.push(formatRequest(request));
-      });
+        // if user is all right
+        drawCreateRequest();
 
-      if (userRequests.length) {
-        drawUserRequests(userRequests);
-      }
-    })
-    .catch(error => {
-      showPageError([
-        {
-          title: 'Getting claims error',
-          message: parseApiErrors(error.response.data),
-        },
-      ]);
-      return;
-    });
-  if (user.isBuddy()) {
-    // TODO: add pagination
-    Axios.get(`/claims/buddy/`, { params: { limit: 100 } })
-      .then(response => {
-        const data = response.data;
-        let buddyRequests = [];
-        data.results.forEach(request => {
-          buddyRequests.push(formatRequest(request));
-        });
+        // TODO: add pagination
+        Axios.get(`/claims/`, { params: { limit: 100 } })
+          .then(response => {
+            const data = response.data;
+            data.results.forEach(request => {
+              userRequests.push(formatRequest(request));
+            });
 
-        if (buddyRequests.length) {
-          drawBuddyRequests(buddyRequests);
+            if (userRequests.length) {
+              drawUserRequests(userRequests);
+            }
+          })
+          .catch(error => {
+            showPageError([
+              {
+                title: 'Getting claims error',
+                message: parseApiErrors(error.response.data),
+              },
+            ]);
+            return;
+          });
+        if (user.isBuddy()) {
+          // TODO: add pagination
+          Axios.get(`/claims/buddy/`, { params: { limit: 100 } })
+            .then(response => {
+              const data = response.data;
+              let buddyRequests = [];
+              data.results.forEach(request => {
+                buddyRequests.push(formatRequest(request));
+              });
+
+              if (buddyRequests.length) {
+                drawBuddyRequests(buddyRequests);
+              }
+            })
+            .catch(error => {
+              showPageError([
+                {
+                  title: 'Getting claims for buddy error',
+                  message: parseApiErrors(error.response.data),
+                },
+              ]);
+              return;
+            });
         }
       })
       .catch(error => {
-        showPageError([
-          {
-            title: 'Getting claims for buddy error',
-            message: parseApiErrors(error.response.data),
-          },
-        ]);
+        const code = error && error.response.status;
+        // profile doesn't exists
+        if (code === 404) {
+          return document.getElementById('profile-create').classList.remove('d-none');
+        }
+        bannerContainer.change(unauthorizedTemplate());
         return;
       });
   }
@@ -271,12 +278,7 @@ function handleCreateRequest(manager) {
       drawUserRequests([]);
     }
 
-    const requestsContainer = document.getElementById(USER_REQUESTS_CONTAINER_ID);
-    const requestsList = requestsContainer.getElementsByClassName(REQUESTS_LIST_CLASSNAME)[0];
-    // construct new request
-    const requestItemNode = document.createElement('div');
-    requestItemNode.className = 'col-lg-3 col-md-4 col-sm-6 col-12 mb-3';
-    requestItemNode.innerHTML = requestItem({
+    const newRequest = {
       id: id || Math.random(),
       isOpen: true,
       isProgress: false,
@@ -290,7 +292,15 @@ function handleCreateRequest(manager) {
       description: data['description'],
       location: lastLocation.place,
       buddiesCount: 0,
-    });
+    };
+    userRequests.push(newRequest);
+
+    const requestsContainer = document.getElementById(USER_REQUESTS_CONTAINER_ID);
+    const requestsList = requestsContainer.getElementsByClassName(REQUESTS_LIST_CLASSNAME)[0];
+    // construct new request
+    const requestItemNode = document.createElement('div');
+    requestItemNode.className = 'col-lg-3 col-md-4 col-sm-6 col-12 mb-3';
+    requestItemNode.innerHTML = requestItem(newRequest);
 
     // insert new request in DOM
     requestsList.prepend(requestItemNode);
