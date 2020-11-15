@@ -94,7 +94,14 @@ export function saveUserSessionToStore(sessionInfo) {
   localStorage.setItem('user', JSON.stringify({ id: sessionInfo.id, name: sessionInfo.name }));
 }
 
+export function isAuth() {
+  return !!localStorage.getItem('access');
+}
+
 export function getCurrentUserId() {
+  if (!isAuth()) {
+    return null;
+  }
   const user = getUserFromStore();
   return user ? user.id : null;
 }
